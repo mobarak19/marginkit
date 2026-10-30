@@ -1,0 +1,31 @@
+{
+  "platform": "ebay",
+  "platformName": "eBay",
+  "country": "UK",
+  "countryName": "United Kingdom",
+  "currency": "GBP",
+  "status": "example",
+  "entered": "2026-10-30",
+  "verified": null,
+  "source": "https://www.ebay.co.uk/help/selling/fees-credits-invoices/selling-fees",
+  "categories": [
+    {
+      "name": "Business seller: most categories",
+      "pct": 12.8
+    },
+    {
+      "name": "Private seller (no final value fee)",
+      "pct": 0,
+      "perOrder": 0
+    }
+  ],
+  "commissionOnShipping": true,
+  "paymentPct": 0,
+  "paymentFixed": 0,
+  "perOrder": 0.3,
+  "perOrderLabel": "Per-order fee",
+  "feeTaxPct": 20,
+  "feeTaxLabel": "VAT on fees",
+  "extras": [],
+  "notes": "Private sellers in the UK pay no final value fee on most items; buyers pay a Buyer Protection fee instead."
+}

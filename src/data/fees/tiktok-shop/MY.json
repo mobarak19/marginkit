@@ -1,0 +1,43 @@
+{
+  "platform": "tiktok-shop",
+  "platformName": "TikTok Shop",
+  "country": "MY",
+  "countryName": "Malaysia",
+  "currency": "MYR",
+  "status": "example",
+  "entered": "2026-10-30",
+  "verified": null,
+  "source": "https://seller-my.tiktok.com/",
+  "categories": [
+    {
+      "name": "Electronics",
+      "pct": 5
+    },
+    {
+      "name": "Fashion",
+      "pct": 8
+    },
+    {
+      "name": "Beauty",
+      "pct": 8
+    },
+    {
+      "name": "Other categories",
+      "pct": 7
+    }
+  ],
+  "commissionOnShipping": false,
+  "paymentPct": 3.24,
+  "paymentFixed": 0,
+  "perOrder": 0,
+  "perOrderLabel": "Fixed fee per order",
+  "feeTaxPct": 8,
+  "feeTaxLabel": "SST on fees",
+  "extras": [
+    {
+      "name": "Affiliate creator commission",
+      "pct": 10
+    }
+  ],
+  "notes": ""
+}

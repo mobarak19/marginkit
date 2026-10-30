@@ -1,0 +1,51 @@
+{
+  "platform": "amazon",
+  "platformName": "Amazon (seller-fulfilled)",
+  "country": "US",
+  "countryName": "United States",
+  "currency": "USD",
+  "status": "example",
+  "entered": "2026-10-30",
+  "verified": null,
+  "source": "https://sellercentral.amazon.com/help/hub/reference/external/GTG4BAWSY39Z98Z3",
+  "categories": [
+    {
+      "name": "Most categories",
+      "pct": 15
+    },
+    {
+      "name": "Consumer electronics",
+      "pct": 8
+    },
+    {
+      "name": "Personal computers",
+      "pct": 8
+    },
+    {
+      "name": "Clothing & accessories",
+      "pct": 17
+    },
+    {
+      "name": "Jewelry",
+      "pct": 20
+    },
+    {
+      "name": "Home & kitchen",
+      "pct": 15
+    },
+    {
+      "name": "Beauty & personal care",
+      "pct": 15
+    }
+  ],
+  "commissionOnShipping": true,
+  "commissionMin": 0.3,
+  "paymentPct": 0,
+  "paymentFixed": 0,
+  "perOrder": 0,
+  "perOrderLabel": "Fixed fee per order",
+  "feeTaxPct": 0,
+  "feeTaxLabel": "Tax on fees",
+  "extras": [],
+  "notes": "Referral fees have a $0.30 minimum per item. For FBA fees use the Amazon FBA calculator."
+}

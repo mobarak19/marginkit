@@ -1,0 +1,53 @@
+---
+import ShareRow from '../ShareRow.astro';
+import CurrencySelect from '../CurrencySelect.astro';
+---
+<div class="calc" data-calc="freelance">
+  <form>
+    <div class="row2">
+      <div class="field"><label for="fr-income">Take-home pay you want <span class="hint">per year</span></label><input class="input" id="fr-income" name="income" type="number" min="0" step="1000" value="60000" /></div>
+      <div class="field"><label for="fr-exp">Business expenses <span class="hint">per year</span></label><input class="input" id="fr-exp" name="exp" type="number" min="0" step="100" value="6000" /></div>
+    </div>
+    <div class="row2">
+      <div class="field"><label for="fr-tax">Income tax &amp; social %</label><input class="input" id="fr-tax" name="tax" type="number" min="0" max="80" step="1" value="25" /></div>
+      <div class="field"><label for="fr-buffer">Profit &amp; savings buffer %</label><input class="input" id="fr-buffer" name="buffer" type="number" min="0" max="100" step="1" value="10" /></div>
+    </div>
+    <div class="row2">
+      <div class="field"><label for="fr-hours">Billable hours per week</label><input class="input" id="fr-hours" name="hours" type="number" min="1" max="80" step="1" value="25" /></div>
+      <div class="field"><label for="fr-weeks">Weeks worked per year</label><input class="input" id="fr-weeks" name="weeks" type="number" min="1" max="52" step="1" value="46" /></div>
+    </div>
+    <div class="row2">
+      <div class="field"><label for="fr-proj">Project estimate <span class="hint">hours</span></label><input class="input" id="fr-proj" name="proj" type="number" min="0" step="1" value="40" /></div>
+      <div class="field"><label for="fr-cont">Contingency %</label><input class="input" id="fr-cont" name="cont" type="number" min="0" max="100" step="5" value="20" /></div>
+    </div>
+    <div class="row2"><CurrencySelect id="fr-cur" /></div>
+    <ShareRow />
+    <p class="note">Billable hours are hours you can invoice, not hours worked: admin, sales and learning usually take 30–40% of a freelancer’s week.</p>
+  </form>
+  <div class="out" data-out aria-live="polite"></div>
+</div>
+
+<script>
+  import { mountCalc, num } from '../../app/calc';
+  import { money } from '../../lib/money';
+
+  const root = document.querySelector<HTMLElement>('[data-calc="freelance"]')!;
+  mountCalc(root, (v) => {
+    const f = money(v.cur || 'USD');
+    const tax = Math.min(0.8, Math.max(0, num(v.tax)) / 100);
+    const preTax = Math.max(0, num(v.income)) / (1 - tax);
+    const revenue = (preTax + Math.max(0, num(v.exp))) * (1 + Math.max(0, num(v.buffer)) / 100);
+    const hours = Math.max(1, num(v.hours, 25)) * Math.max(1, num(v.weeks, 46));
+    const rate = revenue / hours;
+    const proj = Math.max(0, num(v.proj)) * (1 + Math.max(0, num(v.cont)) / 100);
+    return `<div class="big"><div class="k">Minimum hourly rate</div><div class="v">${f(rate)}</div>
+        <div class="s">${f(rate * 8)} per 8-hour day · ${f(revenue / 12)} to invoice each month</div></div>
+      <table class="kv">
+        <tr><th>Revenue needed per year</th><td>${f(revenue)}</td></tr>
+        <tr><th>Billable hours per year</th><td>${hours.toLocaleString()}</td></tr>
+        <tr><th>Tax &amp; social contributions</th><td>${f(preTax - Math.max(0, num(v.income)))}</td></tr>
+        <tr><th>Project price (${proj.toFixed(0)} h incl. contingency)</th><td>${f(proj * rate)}</td></tr>
+      </table>
+      <p class="note">Tax is a flat estimate; real income tax is progressive and depends on your country. Raise the rate for rush work, specialist skills or small projects.</p>`;
+  });
+</script>

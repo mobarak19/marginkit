@@ -1,0 +1,25 @@
+---
+import Base from '../layouts/Base.astro';
+import { SITE } from '../data/site';
+import { u } from '../lib/url';
+---
+<Base title={`Terms of Use | ${SITE.name}`} description={`Terms for using the free ${SITE.name} calculators.`}>
+  <div class="container" style="padding-top:32px">
+    <nav class="breadcrumbs" aria-label="Breadcrumb"><a href={u('/')}>Home</a> / <span aria-current="page">Terms</span></nav>
+    <article class="prose">
+      <h1>Terms of use</h1>
+      <p class="muted small">Last updated 30 October 2026</p>
+      <p>{SITE.name} provides free calculators for sellers and small businesses. By using the site you agree to these terms.</p>
+      <h2>Estimates, not advice</h2>
+      <p>Results are estimates based on the inputs you provide and on fee schedules that change often and vary by account, category and campaign. They are not financial, tax or legal advice. Marketplaces, delivery apps and payment providers publish the authoritative figures in their seller centres and on your statements; check them before making business decisions.</p>
+      <h2>No warranty</h2>
+      <p>The tools are provided “as is”, without warranty of any kind. We work to keep the maths and fee data correct, and each page lists its sources and review date, but we can’t guarantee that every result is accurate or current. To the extent the law allows, we are not liable for losses arising from use of the site.</p>
+      <h2>Trademarks</h2>
+      <p>Daraz, Shopee, Lazada, TikTok Shop, Etsy, eBay, Amazon, Flipkart, Meesho, Whatnot, Poshmark, Depop, Uber Eats, DoorDash, Deliveroo, Foodpanda, Stripe, PayPal, Square, Paddle and Lemon Squeezy are trademarks of their respective owners. {SITE.name} is independent and not affiliated with, endorsed by or sponsored by any of them. Names are used only to describe which fees the calculators model.</p>
+      <h2>Links</h2>
+      <p>Some links go to other websites, including affiliate links (see the <a href={u('/disclosure/')}>disclosure</a>). We are not responsible for the content of other sites.</p>
+      <h2>Changes and contact</h2>
+      <p>We may update these terms; the date above shows the latest version. Questions? Contact {SITE.author} via the <a href={u('/about/#contact')}>About page</a>.</p>
+    </article>
+  </div>
+</Base>

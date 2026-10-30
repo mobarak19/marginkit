@@ -1,0 +1,13 @@
+---
+import Hub from '../components/Hub.astro';
+import { u } from '../lib/url';
+---
+<Hub section="ecom" title="E-commerce & Marketplace Fee Calculators" description="Free seller fee and profit calculators for Daraz, Shopee, Lazada, TikTok Shop, Etsy, eBay, Amazon FBA, Flipkart, Whatnot, Poshmark and Depop, plus shipping costs."
+  h1="E-commerce & marketplace calculators" lead="What each marketplace takes from an order, what you keep, and the price you need. Rates by country and category, all editable.">
+  <section class="section container"><div class="prose">
+    <h2>Start here</h2>
+    <p>Not sure which marketplace pays best for your product? Run it through the <a href={u('/marketplace-profit-calculator/')}>marketplace profit calculator</a>, which covers every marketplace on this site, or read the <a href={u('/guides/marketplace-fee-comparison/')}>marketplace fee comparison</a>.</p>
+    <h2>Before you list</h2>
+    <p>Check your box size with the <a href={u('/shipping-cost-calculator/')}>volumetric weight calculator</a>, and make sure your markup gives the margin you think it does with the <a href={u('/markup-margin-calculator/')}>markup vs margin calculator</a>.</p>
+  </div></section>
+</Hub>

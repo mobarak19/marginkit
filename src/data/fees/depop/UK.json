@@ -1,0 +1,26 @@
+{
+  "platform": "depop",
+  "platformName": "Depop",
+  "country": "UK",
+  "countryName": "United Kingdom",
+  "currency": "GBP",
+  "status": "example",
+  "entered": "2026-10-30",
+  "verified": null,
+  "source": "https://depophelp.zendesk.com/",
+  "categories": [
+    {
+      "name": "All categories (no selling fee)",
+      "pct": 0
+    }
+  ],
+  "commissionOnShipping": true,
+  "paymentPct": 3.3,
+  "paymentFixed": 0.45,
+  "perOrder": 0,
+  "perOrderLabel": "Fixed fee per order",
+  "feeTaxPct": 0,
+  "feeTaxLabel": "Tax on fees",
+  "extras": [],
+  "notes": "UK sellers pay no selling fee; a payment-processing fee applies to the total including shipping."
+}

@@ -1,0 +1,78 @@
+---
+import ShareRow from '../ShareRow.astro';
+import CurrencySelect from '../CurrencySelect.astro';
+---
+<div class="calc" data-calc="shipping">
+  <form>
+    <div class="field">
+      <span class="label">Units</span>
+      <div class="seg" role="radiogroup" aria-label="Units">
+        <label><input type="radio" name="unit" value="metric" checked /><span>cm / kg</span></label>
+        <label><input type="radio" name="unit" value="imperial" /><span>inches / lb</span></label>
+      </div>
+    </div>
+    <div class="row3">
+      <div class="field"><label for="sh-l">Length</label><input class="input" id="sh-l" name="l" type="number" min="0" step="0.5" value="40" /></div>
+      <div class="field"><label for="sh-w">Width</label><input class="input" id="sh-w" name="w" type="number" min="0" step="0.5" value="30" /></div>
+      <div class="field"><label for="sh-h">Height</label><input class="input" id="sh-h" name="h" type="number" min="0" step="0.5" value="20" /></div>
+    </div>
+    <div class="row2">
+      <div class="field"><label for="sh-wt">Actual weight</label><input class="input" id="sh-wt" name="wt" type="number" min="0" step="0.1" value="3.2" /></div>
+      <div class="field">
+        <label for="sh-div">Volumetric divisor</label>
+        <select class="select" id="sh-div" name="div">
+          <option value="auto" selected>Carrier standard (5000 / 139)</option>
+          <option value="4000">4000 (some couriers)</option>
+          <option value="6000">6000 (some postal services)</option>
+          <option value="166">166 (US retail, inches)</option>
+        </select>
+      </div>
+    </div>
+    <div class="row3">
+      <div class="field"><label for="sh-step">Round up to</label><input class="input" id="sh-step" name="step" type="number" min="0" step="0.1" value="0.5" /></div>
+      <div class="field"><label for="sh-base">Base fee</label><input class="input" id="sh-base" name="base" type="number" min="0" step="0.1" value="6" /></div>
+      <div class="field"><label for="sh-rate">Rate per kg / lb</label><input class="input" id="sh-rate" name="rate" type="number" min="0" step="0.1" value="2.2" /></div>
+    </div>
+    <div class="row2">
+      <div class="field"><label for="sh-n">Parcels per month</label><input class="input" id="sh-n" name="n" type="number" min="0" step="10" value="200" /></div>
+      <CurrencySelect id="sh-cur" />
+    </div>
+    <ShareRow />
+    <p class="note">Carriers bill the higher of actual and volumetric weight. Check your carrier’s divisor and rate card; base fee and rate here are examples.</p>
+  </form>
+  <div class="out" data-out aria-live="polite"></div>
+</div>
+
+<script>
+  import { mountCalc, num } from '../../app/calc';
+  import { dimWeight, roundUpTo } from '../../lib/profit';
+  import { money } from '../../lib/money';
+
+  const root = document.querySelector<HTMLElement>('[data-calc="shipping"]')!;
+  mountCalc(root, (v) => {
+    const f = money(v.cur || 'USD');
+    const imperial = v.unit === 'imperial';
+    const wu = imperial ? 'lb' : 'kg';
+    const l = Math.max(0, num(v.l)), w = Math.max(0, num(v.w)), h = Math.max(0, num(v.h));
+    const actual = Math.max(0, num(v.wt));
+    const divisor = v.div === 'auto' || !v.div ? (imperial ? 139 : 5000) : num(v.div, 5000);
+    const dim = dimWeight(l, w, h, divisor);
+    const step = Math.max(0, num(v.step));
+    const billable = roundUpTo(Math.max(actual, dim), step);
+    const cost = Math.max(0, num(v.base)) + billable * Math.max(0, num(v.rate));
+    const actualCost = Math.max(0, num(v.base)) + roundUpTo(actual, step) * Math.max(0, num(v.rate));
+    const n = Math.max(0, num(v.n));
+    // Box that would make volumetric weight equal the actual weight (same proportions).
+    const scale = dim > actual && dim > 0 ? Math.cbrt(actual / dim) : 1;
+    return `<div class="big"><div class="k">Billable weight</div><div class="v">${billable.toFixed(2)} ${wu}</div>
+        <div class="s">${dim > actual ? 'Volumetric weight applies: you pay for space, not weight' : 'Actual weight applies'}</div></div>
+      <table class="kv">
+        <tr><th>Actual weight</th><td>${actual.toFixed(2)} ${wu}</td></tr>
+        <tr><th>Volumetric weight (L×W×H ÷ ${divisor})</th><td>${dim.toFixed(2)} ${wu}</td></tr>
+        <tr><th>Estimated cost per parcel</th><td>${f(cost)}</td></tr>
+        ${dim > actual ? `<tr><th>Extra paid for box size</th><td>${f(cost - actualCost)} per parcel · ${f((cost - actualCost) * n)} a month</td></tr>
+        <tr><th>Box size to avoid it</th><td>${(l * scale).toFixed(1)} × ${(w * scale).toFixed(1)} × ${(h * scale).toFixed(1)} ${imperial ? 'in' : 'cm'}</td></tr>` : ''}
+        <tr><th>Monthly shipping (${n.toLocaleString()} parcels)</th><td>${f(cost * n)}</td></tr>
+      </table>`;
+  });
+</script>

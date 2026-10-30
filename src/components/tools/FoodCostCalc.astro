@@ -1,0 +1,76 @@
+---
+import ShareRow from '../ShareRow.astro';
+import CurrencySelect from '../CurrencySelect.astro';
+---
+<div class="calc" data-calc="foodcost">
+  <form>
+    <div class="field">
+      <span class="label">What do you want to work out?</span>
+      <div class="seg" role="radiogroup" aria-label="Mode">
+        <label><input type="radio" name="mode" value="plate" checked /><span>One dish</span></label>
+        <label><input type="radio" name="mode" value="period" /><span>Whole kitchen (week / month)</span></label>
+      </div>
+    </div>
+    <div class="row2" data-mode="plate">
+      <div class="field"><label for="fc-cost">Ingredient cost per plate</label><input class="input" id="fc-cost" name="cost" type="number" inputmode="decimal" min="0" step="0.01" value="3.6" /></div>
+      <div class="field"><label for="fc-price">Menu price <span class="hint">before tax</span></label><input class="input" id="fc-price" name="price" type="number" inputmode="decimal" min="0" step="0.01" value="12.5" /></div>
+    </div>
+    <div data-mode="period" hidden style="display:grid;gap:12px">
+      <div class="row2">
+        <div class="field"><label for="fc-open">Opening inventory</label><input class="input" id="fc-open" name="open" type="number" min="0" step="10" value="4000" /></div>
+        <div class="field"><label for="fc-buy">Purchases</label><input class="input" id="fc-buy" name="buy" type="number" min="0" step="10" value="11000" /></div>
+      </div>
+      <div class="row2">
+        <div class="field"><label for="fc-close">Closing inventory</label><input class="input" id="fc-close" name="close" type="number" min="0" step="10" value="3500" /></div>
+        <div class="field"><label for="fc-sales">Food sales <span class="hint">before tax</span></label><input class="input" id="fc-sales" name="sales" type="number" min="0" step="10" value="38000" /></div>
+      </div>
+    </div>
+    <div class="row2">
+      <div class="field"><label for="fc-target">Target food cost %</label><input class="input" id="fc-target" name="target" type="number" min="1" max="99" step="0.5" value="30" /></div>
+      <CurrencySelect id="fc-cur" />
+    </div>
+    <ShareRow />
+    <p class="note">Food cost % = cost of food ÷ food sales. Most restaurants aim for 25–35%.</p>
+  </form>
+  <div class="out" data-out aria-live="polite"></div>
+</div>
+
+<script>
+  import { mountCalc, num } from '../../app/calc';
+  import { money, pct } from '../../lib/money';
+
+  const root = document.querySelector<HTMLElement>('[data-calc="foodcost"]')!;
+  mountCalc(root, (v) => {
+    const f = money(v.cur || 'USD');
+    const target = Math.min(99, Math.max(1, num(v.target, 30))) / 100;
+    const verdict = (p: number) =>
+      p <= target ? `<span class="pill low">At or under your ${pct(target, 0)} target</span>` : `<span class="pill high">${pct(p - target)} over your ${pct(target, 0)} target</span>`;
+    if (v.mode === 'period') {
+      const used = Math.max(0, num(v.open) + num(v.buy) - num(v.close));
+      const sales = Math.max(0, num(v.sales));
+      const p = sales ? used / sales : 0;
+      return `<div class="big"><div class="k">Food cost percentage</div><div class="v">${pct(p)}</div><div class="s">${verdict(p)}</div></div>
+        <table class="kv">
+          <tr><th>Opening + purchases − closing</th><td>${f(used)}</td></tr>
+          <tr><th>Food sales</th><td>${f(sales)}</td></tr>
+          <tr><th>Gross profit on food</th><td>${f(sales - used)}</td></tr>
+          <tr><th>Food cost at your target</th><td>${f(sales * target)}</td></tr>
+          <tr><th>${used > sales * target ? 'Overspend vs target' : 'Under target by'}</th><td>${f(Math.abs(used - sales * target))}</td></tr>
+        </table>
+        <p class="note">A rising percentage with steady prices usually means waste, over-portioning, theft or supplier price rises. Count inventory the same way each period.</p>`;
+    }
+    const cost = Math.max(0, num(v.cost));
+    const price = Math.max(0, num(v.price));
+    const p = price ? cost / price : 0;
+    return `<div class="big"><div class="k">Food cost percentage</div><div class="v">${pct(p)}</div><div class="s">${verdict(p)}</div></div>
+      <table class="kv">
+        <tr><th>Gross profit per plate</th><td>${f(price - cost)}</td></tr>
+        <tr><th>Price for ${pct(target, 0)} food cost</th><td>${f(cost / target)}</td></tr>
+        <tr><th>Max ingredient cost at this price</th><td>${f(price * target)}</td></tr>
+        <tr><th>Markup on ingredients</th><td>${cost ? pct((price - cost) / cost, 0) : '—'}</td></tr>
+      </table>
+      <p class="note">Include every ingredient, garnish and sauce at the price you pay today. Use the <a href="../recipe-cost-calculator/">recipe cost calculator</a> to get the plate cost.</p>`;
+  }, (v) => {
+    for (const el of root.querySelectorAll<HTMLElement>('[data-mode]')) el.hidden = el.dataset.mode !== (v.mode || 'plate');
+  });
+</script>

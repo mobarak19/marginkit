@@ -1,0 +1,132 @@
+---
+import CurrencySelect from '../CurrencySelect.astro';
+const SAMPLE = `item,sold,price,cost
+Chicken biryani,420,12.5,3.9
+Beef burger,310,11,3.6
+Margherita pizza,260,13,3.1
+Grilled salmon,90,22,8.4
+Caesar salad,140,9.5,2.2
+Lamb shank,55,24,9.8
+Veggie wrap,70,8.5,2.6
+Chocolate lava cake,180,7,1.4
+Mango lassi,330,4.5,0.9
+Fish & chips,75,14,5.3`;
+---
+<div class="calc menu-eng" data-tool="menu-eng">
+  <div style="display:grid;gap:14px;min-width:0">
+    <div class="field">
+      <label for="me-csv">Menu sales data <span class="hint">CSV: item, sold, price, cost</span></label>
+      <textarea class="input mono" id="me-csv" rows="12" spellcheck="false">{SAMPLE}</textarea>
+    </div>
+    <div class="share-row">
+      <label class="btn btn-sm" for="me-file">Upload CSV</label>
+      <input id="me-file" type="file" accept=".csv,text/csv,text/plain" class="visually-hidden" />
+      <button type="button" class="btn btn-sm" data-act="download">Download results CSV</button>
+      <button type="button" class="btn btn-sm btn-ghost" data-act="sample">Load sample</button>
+    </div>
+    <div class="row2"><CurrencySelect id="me-cur" /></div>
+    <p class="note">Export item sales for a period from your POS (quantity sold, menu price, plate cost). Your file is read in your browser and never uploaded.</p>
+  </div>
+  <div class="out" data-me-out aria-live="polite" style="min-width:0"></div>
+</div>
+<div class="container" style="padding:0;margin-top:18px"><div class="table-wrap" data-me-table></div></div>
+
+<script>
+  import { esc } from '../../app/calc';
+  import { menuEngineering, parseCsv, type MenuItem } from '../../lib/profit';
+  import { money, pct } from '../../lib/money';
+
+  const root = document.querySelector<HTMLElement>('[data-tool="menu-eng"]')!;
+  const ta = root.querySelector<HTMLTextAreaElement>('#me-csv')!;
+  const cur = root.querySelector<HTMLSelectElement>('select[name="cur"]')!;
+  const out = root.querySelector<HTMLElement>('[data-me-out]')!;
+  const tableBox = document.querySelector<HTMLElement>('[data-me-table]')!;
+  const SAMPLE = ta.defaultValue;
+  const ADVICE = {
+    Star: 'Keep quality and visibility high; don’t discount.',
+    Plowhorse: 'Popular but low margin: re-cost the recipe, trim portions or raise the price a little.',
+    Puzzle: 'Profitable but slow: move it to a better menu spot, rename it or have staff recommend it.',
+    Dog: 'Remove or rework unless it serves a purpose (a kids’ meal, a vegan option).',
+  } as const;
+  let lastRows: ReturnType<typeof menuEngineering>['rows'] = [];
+
+  const toNum = (s: string | undefined) => {
+    const n = parseFloat(String(s ?? '').replace(/[^0-9.\-]/g, ''));
+    return Number.isFinite(n) ? n : NaN;
+  };
+
+  function parse(text: string): { items: MenuItem[]; skipped: number } {
+    const rows = parseCsv(text);
+    if (!rows.length) return { items: [], skipped: 0 };
+    const head = rows[0].map((h) => h.toLowerCase());
+    const hasHeader = head.some((h) => /item|name|dish|sold|qty|price|cost/.test(h));
+    const col = (re: RegExp, fallback: number) => {
+      const i = head.findIndex((h) => re.test(h));
+      return hasHeader && i >= 0 ? i : fallback;
+    };
+    const ci = { name: col(/item|name|dish/, 0), sold: col(/sold|qty|quantity|count|units/, 1), price: col(/price|sell/, 2), cost: col(/cost|food/, 3) };
+    let skipped = 0;
+    const items: MenuItem[] = [];
+    for (const r of hasHeader ? rows.slice(1) : rows) {
+      const it = { name: r[ci.name] || '(unnamed)', sold: toNum(r[ci.sold]), price: toNum(r[ci.price]), cost: toNum(r[ci.cost]) };
+      if ([it.sold, it.price, it.cost].some((x) => !Number.isFinite(x)) || it.sold <= 0 || it.price <= 0) skipped++;
+      else items.push(it);
+    }
+    return { items, skipped };
+  }
+
+  function render() {
+    const f = money(cur.value || 'USD');
+    const { items, skipped } = parse(ta.value);
+    if (items.length < 2) {
+      out.innerHTML = '<div class="alert alert-info"><div><h3>Add at least two menu items</h3><p>One per line: item name, quantity sold, menu price, plate cost.</p></div></div>';
+      tableBox.innerHTML = '';
+      lastRows = [];
+      return;
+    }
+    const m = menuEngineering(items);
+    lastRows = m.rows;
+    const groups = (['Star', 'Plowhorse', 'Puzzle', 'Dog'] as const).map((c) => ({ c, items: m.rows.filter((r) => r.cls === c) }));
+    out.innerHTML = `<div class="matrix">${groups.map((g) => `<div class="matrix-cell ${g.c.toLowerCase()}">
+          <strong>${g.c}s <span class="tag">${g.items.length}</span></strong>
+          <span class="small">${g.c === 'Star' ? 'High profit · popular' : g.c === 'Plowhorse' ? 'Low profit · popular' : g.c === 'Puzzle' ? 'High profit · unpopular' : 'Low profit · unpopular'}</span>
+          <span class="small">${g.items.map((r) => esc(r.name)).join(', ') || '—'}</span></div>`).join('')}</div>
+      <table class="kv">
+        <tr><th>Items analysed</th><td>${m.rows.length}${skipped ? ` (${skipped} rows skipped)` : ''}</td></tr>
+        <tr><th>Average contribution margin</th><td>${f(m.avgCm)}</td></tr>
+        <tr><th>Popularity threshold (70% rule)</th><td>${pct(m.popThreshold)} of sales</td></tr>
+        <tr><th>Total contribution</th><td>${f(m.totalCm)}</td></tr>
+        <tr><th>Menu food cost</th><td>${pct(m.foodCostPct)}</td></tr>
+      </table>`;
+    const sorted = [...m.rows].sort((a, b) => b.totalCm - a.totalCm);
+    tableBox.innerHTML = `<table class="data-table">
+      <thead><tr><th><span>Item</span></th><th class="r"><span>Sold</span></th><th class="r"><span>Mix</span></th><th class="r"><span>Price</span></th><th class="r"><span>Cost</span></th><th class="r"><span>Margin</span></th><th class="r"><span>Total margin</span></th><th><span>Class</span></th><th><span>What to do</span></th></tr></thead>
+      <tbody>${sorted.map((r) => `<tr><td>${esc(r.name)}</td><td class="r">${r.sold.toLocaleString()}</td><td class="r">${pct(r.mix)}</td><td class="r">${f(r.price)}</td><td class="r">${f(r.cost)}</td><td class="r">${f(r.cm)}</td><td class="r">${f(r.totalCm)}</td><td><span class="tag cls-${r.cls.toLowerCase()}">${r.cls}</span></td><td class="wrap">${ADVICE[r.cls]}</td></tr>`).join('')}</tbody></table>`;
+  }
+
+  function download() {
+    if (!lastRows.length) return;
+    const q = (s: string | number) => `"${String(s).replace(/"/g, '""')}"`;
+    const lines = [['item', 'sold', 'price', 'cost', 'contribution_margin', 'menu_mix', 'total_margin', 'class'].join(',')];
+    for (const r of lastRows) lines.push([q(r.name), r.sold, r.price, r.cost, r.cm.toFixed(2), (r.mix * 100).toFixed(2) + '%', r.totalCm.toFixed(2), r.cls].join(','));
+    const url = URL.createObjectURL(new Blob([lines.join('\n')], { type: 'text/csv' }));
+    const a = Object.assign(document.createElement('a'), { href: url, download: 'menu-engineering.csv' });
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  }
+
+  ta.addEventListener('input', render);
+  cur.addEventListener('change', render);
+  root.querySelector<HTMLInputElement>('#me-file')!.addEventListener('change', async (e) => {
+    const file = (e.target as HTMLInputElement).files?.[0];
+    if (!file) return;
+    ta.value = await file.text();
+    render();
+  });
+  root.addEventListener('click', (e) => {
+    const act = (e.target as HTMLElement).closest<HTMLElement>('[data-act]')?.dataset.act;
+    if (act === 'download') download();
+    if (act === 'sample') { ta.value = SAMPLE; render(); }
+  });
+  render();
+</script>

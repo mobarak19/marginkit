@@ -1,0 +1,12 @@
+---
+// Currency used to format results (name="cur"). Doesn't convert anything.
+interface Props { id: string; value?: string }
+const { id, value = 'USD' } = Astro.props;
+const CURRENCIES = ['USD', 'EUR', 'GBP', 'BDT', 'INR', 'PKR', 'LKR', 'NPR', 'MYR', 'PHP', 'SGD', 'THB', 'IDR', 'VND', 'AED', 'SAR', 'CAD', 'AUD', 'NGN', 'BRL', 'MXN'];
+---
+<div class="field">
+  <label for={id}>Currency</label>
+  <select class="select" id={id} name="cur">
+    {CURRENCIES.map((c) => <option value={c} selected={c === value}>{c}</option>)}
+  </select>
+</div>

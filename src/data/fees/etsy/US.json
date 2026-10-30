@@ -1,0 +1,31 @@
+{
+  "platform": "etsy",
+  "platformName": "Etsy",
+  "country": "US",
+  "countryName": "United States",
+  "currency": "USD",
+  "status": "example",
+  "entered": "2026-10-30",
+  "verified": null,
+  "source": "https://www.etsy.com/legal/fees/",
+  "categories": [
+    {
+      "name": "All categories (6.5% transaction fee)",
+      "pct": 6.5
+    }
+  ],
+  "commissionOnShipping": true,
+  "paymentPct": 3,
+  "paymentFixed": 0.25,
+  "perOrder": 0.2,
+  "perOrderLabel": "Listing fee",
+  "feeTaxPct": 0,
+  "feeTaxLabel": "Tax on fees",
+  "extras": [
+    {
+      "name": "Offsite Ads (15%; 12% above $10k/yr sales)",
+      "pct": 15
+    }
+  ],
+  "notes": ""
+}

@@ -1,0 +1,74 @@
+---
+import ShareRow from '../ShareRow.astro';
+import CurrencySelect from '../CurrencySelect.astro';
+import { PROVIDERS } from '../../lib/payments';
+---
+<div class="calc" data-calc="payfee">
+  <form>
+    <div class="field">
+      <span class="label">I want to know…</span>
+      <div class="seg" role="radiogroup" aria-label="Direction">
+        <label><input type="radio" name="dir" value="net" checked /><span>What I receive</span></label>
+        <label><input type="radio" name="dir" value="gross" /><span>What to charge</span></label>
+      </div>
+    </div>
+    <div class="row2">
+      <div class="field"><label for="pf-amt">Amount</label><input class="input" id="pf-amt" name="amt" type="number" inputmode="decimal" min="0" step="0.01" value="100" /></div>
+      <div class="field">
+        <label for="pf-prov">Provider</label>
+        <select class="select" id="pf-prov" name="prov">
+          {PROVIDERS.map((p, i) => <option value={p.id} selected={i === 0}>{p.name}</option>)}
+        </select>
+      </div>
+    </div>
+    <div class="row3">
+      <div class="field"><label for="pf-pct">Fee %</label><input class="input" id="pf-pct" name="pct" type="number" min="0" max="50" step="0.01" value={PROVIDERS[0].pct} /></div>
+      <div class="field"><label for="pf-fix">Fixed fee</label><input class="input" id="pf-fix" name="fix" type="number" min="0" step="0.01" value={PROVIDERS[0].fixed} /></div>
+      <div class="field"><label for="pf-intl">International card +%</label><input class="input" id="pf-intl" name="intl" type="number" min="0" max="10" step="0.1" value="0" /></div>
+    </div>
+    <div class="row2"><CurrencySelect id="pf-cur" /></div>
+    <ShareRow />
+    <p class="note">Standard published online-card rates used as examples; negotiated, in-person and local-method rates differ. Paddle and Lemon Squeezy are merchants of record and also handle sales tax.</p>
+  </form>
+  <div class="out" data-out aria-live="polite"></div>
+</div>
+
+<script>
+  import { mountCalc, num, esc } from '../../app/calc';
+  import { paymentFee, grossUp } from '../../lib/profit';
+  import { PROVIDERS } from '../../lib/payments';
+  import { money, pct } from '../../lib/money';
+
+  const root = document.querySelector<HTMLElement>('[data-calc="payfee"]')!;
+  const form = root.querySelector('form')!;
+  const prov = form.elements.namedItem('prov') as HTMLSelectElement;
+  prov.addEventListener('change', () => {
+    const p = PROVIDERS.find((x) => x.id === prov.value) ?? PROVIDERS[0];
+    (form.elements.namedItem('pct') as HTMLInputElement).value = String(p.pct);
+    (form.elements.namedItem('fix') as HTMLInputElement).value = String(p.fixed);
+  });
+
+  mountCalc(root, (v) => {
+    const f = money(v.cur || 'USD');
+    const amt = Math.max(0, num(v.amt));
+    const rate = Math.max(0, num(v.pct)) + Math.max(0, num(v.intl));
+    const fixed = Math.max(0, num(v.fix));
+    const gross = v.dir === 'gross';
+    const charge = gross ? grossUp(amt, rate, fixed) : amt;
+    const { fee, net } = paymentFee(charge, rate, fixed);
+    const compare = PROVIDERS.filter((p) => p.id !== 'custom').map((p) => {
+      const c = gross ? grossUp(amt, p.pct, p.fixed) : amt;
+      const r = paymentFee(c, p.pct, p.fixed);
+      return `<tr><th>${esc(p.name)}</th><td>${gross ? `charge ${f(c)}` : `${f(r.net)} net`} <span class="muted small">(${f(r.fee)})</span></td></tr>`;
+    }).join('');
+    return `<div class="big"><div class="k">${gross ? 'Charge the customer' : 'You receive'}</div><div class="v">${f(gross ? charge : net)}</div>
+        <div class="s">Fee ${f(fee)} · ${pct(charge ? fee / charge : 0, 2)} effective rate</div></div>
+      <table class="kv">
+        <tr><th>Customer pays</th><td>${f(charge)}</td></tr>
+        <tr><th>Fee (${rate}% + ${f(fixed)})</th><td>−${f(fee)}</td></tr>
+        <tr><th>You receive</th><td>${f(net)}</td></tr>
+      </table>
+      <table class="kv">${compare}</table>
+      <p class="note">Charge = (amount you want + fixed fee) ÷ (1 − fee %). Simply adding the fee % to the price leaves you slightly short.</p>`;
+  });
+</script>

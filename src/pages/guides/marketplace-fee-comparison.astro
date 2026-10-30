@@ -1,0 +1,47 @@
+---
+import Guide from '../../layouts/Guide.astro';
+import { SCHEDULES } from '../../data/fees';
+import { saleProfit } from '../../lib/profit';
+import { money, pct, sampleFor } from '../../lib/money';
+import { u } from '../../lib/url';
+
+// Same order shape everywhere: the sample order for the currency, first
+// (default) category, no optional programmes, no ads.
+const rows = SCHEDULES.map((s) => {
+  const smp = sampleFor(s.currency);
+  const c = s.categories[0];
+  const r = saleProfit({
+    price: smp.price, shippingCharged: smp.ship, discount: 0, cogs: smp.cogs, shipCost: smp.shipcost, packaging: smp.pack, otherCost: 0,
+    adsPct: 0, vatPct: 0, commissionPct: c.pct, commissionMin: s.commissionMin ?? 0, commissionOnShipping: s.commissionOnShipping,
+    flatBelow: s.flatBelow, paymentPct: s.paymentPct, paymentFixed: s.paymentFixed, perOrder: c.perOrder ?? s.perOrder,
+    perOrderBelow: s.perOrderBelow, extrasPct: 0, feeTaxPct: s.feeTaxPct,
+  });
+  return { s, c, f: money(s.currency), smp, r, take: r.revenue ? r.fees / r.revenue : 0 };
+}).sort((a, b) => a.take - b.take);
+const unverified = SCHEDULES.some((s) => !s.verified);
+---
+<Guide title="Marketplace Fee Comparison 2026: 12 Platforms" description="What Daraz, Shopee, Lazada, TikTok Shop, Etsy, eBay, Amazon, Flipkart, Meesho, Whatnot, Poshmark and Depop take from a typical order, by country."
+  h1="Marketplace fee comparison 2026" updated="2026-10-30" tools={['marketplace-profit-calculator', 'daraz-commission-calculator', 'shopee-fee-calculator', 'etsy-fee-calculator']} offers="guide">
+  <p>Marketplaces describe their fees in different ways (commission, referral fee, final value fee, transaction fee) and add different extras. To compare them fairly, the table below runs <strong>the same kind of order</strong> through each one: a typical price for the currency, the default category, no optional programmes and no ads, with tax on fees included.</p>
+  {unverified && <div class="callout"><p><strong>Example rates.</strong> Some fee schedules on this site have not yet been checked against the official pages; the status column shows which. Use each calculator to enter your own rates.</p></div>}
+  <div class="table-wrap">
+    <table class="data-table">
+      <thead><tr><th><span>Marketplace</span></th><th><span>Country</span></th><th class="r"><span>Order</span></th><th class="r"><span>Fees</span></th><th class="r"><span>Take rate</span></th><th><span>Status</span></th></tr></thead>
+      <tbody>
+        {rows.map(({ s, f, r, take }) => (
+          <tr><td>{s.platformName}</td><td>{s.countryName}</td><td class="r">{f(r.revenue)}</td><td class="r">{f(r.fees)}</td><td class="r"><strong>{pct(take)}</strong></td><td><span class:list={['tag', s.verified ? 'ok' : 'warn']}>{s.verified ? 'Verified' : 'Example'}</span></td></tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+  <p class="small muted">Take rate = all marketplace fees (including tax on fees) ÷ what the buyer pays. {unverified && `Example rates entered ${SCHEDULES[0].entered}.`}</p>
+  <h2>What the table doesn’t show</h2>
+  <ul>
+    <li><strong>Category differences.</strong> Electronics usually pay the lowest commission, fashion and beauty the highest.</li>
+    <li><strong>Programmes and campaigns.</strong> Free-shipping, cashback and campaign fees can add 3–10%.</li>
+    <li><strong>Fulfilment and ads.</strong> Amazon FBA fees and PPC are often larger than the referral fee; see the <a href={u('/amazon-fba-calculator/')}>FBA calculator</a>.</li>
+    <li><strong>Who pays shipping.</strong> Some marketplaces charge commission on shipping (Etsy, eBay, TikTok Shop US); others don’t.</li>
+  </ul>
+  <h2>How to use this</h2>
+  <p>Low fees don’t make a marketplace the best choice: traffic, conversion and returns matter more. Use the take rate to set a <strong>minimum price per marketplace</strong>, then compare the profit on your own product in the <a href={u('/marketplace-profit-calculator/')}>marketplace profit calculator</a>.</p>
+</Guide>

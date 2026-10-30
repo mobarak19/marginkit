@@ -1,0 +1,45 @@
+---
+import ToolPage from '../components/ToolPage.astro';
+import FeeTable from '../components/FeeTable.astro';
+import { TOOLS } from '../data/tools';
+import MarketplaceCalc from '../components/tools/MarketplaceCalc.astro';
+import AmazonFbaCalc from '../components/tools/AmazonFbaCalc.astro';
+import ShippingCalc from '../components/tools/ShippingCalc.astro';
+import FoodCostCalc from '../components/tools/FoodCostCalc.astro';
+import MenuPriceCalc from '../components/tools/MenuPriceCalc.astro';
+import RecipeCostCalc from '../components/tools/RecipeCostCalc.astro';
+import RestaurantProfitCalc from '../components/tools/RestaurantProfitCalc.astro';
+import DeliveryCommissionCalc from '../components/tools/DeliveryCommissionCalc.astro';
+import MenuEngineeringTool from '../components/tools/MenuEngineeringTool.astro';
+import MarkupMarginCalc from '../components/tools/MarkupMarginCalc.astro';
+import BreakEvenCalc from '../components/tools/BreakEvenCalc.astro';
+import PaymentFeeCalc from '../components/tools/PaymentFeeCalc.astro';
+import EoqCalc from '../components/tools/EoqCalc.astro';
+import BundleCalc from '../components/tools/BundleCalc.astro';
+import FreelanceRateCalc from '../components/tools/FreelanceRateCalc.astro';
+
+export function getStaticPaths() {
+  return TOOLS.map((tool) => ({ params: { tool: tool.slug }, props: { tool } }));
+}
+const { tool } = Astro.props;
+const s = tool.slug;
+const isMarket = tool.platform !== undefined;
+---
+<ToolPage tool={tool}>
+  {isMarket && <MarketplaceCalc platform={tool.platform || undefined} defaultCountry={tool.defaultCountry} />}
+  {s === 'amazon-fba-calculator' && <AmazonFbaCalc />}
+  {s === 'shipping-cost-calculator' && <ShippingCalc />}
+  {s === 'food-cost-calculator' && <FoodCostCalc />}
+  {s === 'menu-price-calculator' && <MenuPriceCalc />}
+  {s === 'recipe-cost-calculator' && <RecipeCostCalc />}
+  {s === 'restaurant-profit-calculator' && <RestaurantProfitCalc />}
+  {s === 'delivery-app-commission-calculator' && <DeliveryCommissionCalc />}
+  {s === 'menu-engineering-calculator' && <MenuEngineeringTool />}
+  {s === 'markup-margin-calculator' && <MarkupMarginCalc />}
+  {s === 'break-even-calculator' && <BreakEvenCalc />}
+  {s === 'payment-fee-calculator' && <PaymentFeeCalc />}
+  {s === 'eoq-reorder-point-calculator' && <EoqCalc />}
+  {s === 'bundle-pricing-calculator' && <BundleCalc />}
+  {s === 'freelance-rate-calculator' && <FreelanceRateCalc />}
+  {tool.platform && <FeeTable platform={tool.platform} slot="after" />}
+</ToolPage>

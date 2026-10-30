@@ -1,0 +1,74 @@
+---
+import ShareRow from '../ShareRow.astro';
+import CurrencySelect from '../CurrencySelect.astro';
+const items = [['Main product', 30, 12], ['Add-on', 15, 4], ['Extra (optional)', 0, 0]] as const;
+---
+<div class="calc" data-calc="bundle">
+  <form>
+    {items.map(([label, price, cost], i) => (
+      <div class="row2">
+        <div class="field"><label for={`bd-p${i}`}>{label}: price</label><input class="input" id={`bd-p${i}`} name={`p${i}`} type="number" min="0" step="0.01" value={price} /></div>
+        <div class="field"><label for={`bd-c${i}`}>{label}: cost</label><input class="input" id={`bd-c${i}`} name={`c${i}`} type="number" min="0" step="0.01" value={cost} /></div>
+      </div>
+    ))}
+    <div class="row2">
+      <div class="field"><label for="bd-disc">Bundle discount %</label><input class="input" id="bd-disc" name="disc" type="number" min="0" max="90" step="1" value="15" /></div>
+      <div class="field"><label for="bd-ship">Fees &amp; shipping per order</label><input class="input" id="bd-ship" name="ship" type="number" min="0" step="0.01" value="5" /></div>
+    </div>
+    <div class="row2">
+      <div class="field">
+        <label for="bd-end">Price ending</label>
+        <select class="select" id="bd-end" name="end">
+          <option value="none">Exact</option>
+          <option value="0.99" selected>.99</option>
+          <option value="0.95">.95</option>
+          <option value="0">Whole number</option>
+        </select>
+      </div>
+      <CurrencySelect id="bd-cur" />
+    </div>
+    <ShareRow />
+  </form>
+  <div class="out" data-out aria-live="polite"></div>
+</div>
+
+<script>
+  import { mountCalc, num } from '../../app/calc';
+  import { money, pct } from '../../lib/money';
+
+  const root = document.querySelector<HTMLElement>('[data-calc="bundle"]')!;
+  mountCalc(root, (v) => {
+    const f = money(v.cur || 'USD');
+    const rows = [0, 1, 2].map((i) => ({ p: Math.max(0, num(v[`p${i}`])), c: Math.max(0, num(v[`c${i}`])) })).filter((r) => r.p > 0);
+    if (rows.length < 2) return '<div class="alert alert-info"><div><h3>Add at least two items</h3><p>A bundle needs a main product and at least one add-on with a price.</p></div></div>';
+    const ship = Math.max(0, num(v.ship));
+    const sum = rows.reduce((s, r) => s + r.p, 0);
+    const cost = rows.reduce((s, r) => s + r.c, 0);
+    const raw = sum * (1 - Math.min(90, Math.max(0, num(v.disc))) / 100);
+    // Price endings round down, so the bundle never costs more than the chosen discount.
+    let price = raw;
+    if (v.end !== 'none') {
+      const end = num(v.end);
+      price = Math.floor(raw) + end;
+      if (price > raw) price -= 1;
+      price = Math.max(price, end || 1);
+    }
+    const bundleProfit = price - cost - ship;
+    const main = rows[0];
+    const mainProfit = main.p - main.c - ship;
+    const separateProfit = sum - cost - ship;
+    const extra = bundleProfit - mainProfit;
+    return `<div class="big"><div class="k">Bundle price</div><div class="v">${f(price)}</div>
+        <div class="s">Customer saves ${f(sum - price)} (${pct(sum ? (sum - price) / sum : 0, 0)}) · ${pct(price ? bundleProfit / price : 0)} margin</div></div>
+      <table class="kv">
+        <tr><th>Items bought separately</th><td>${f(sum)}</td></tr>
+        <tr><th>Bundle cost of goods</th><td>${f(cost)}</td></tr>
+        <tr><th>Profit per bundle</th><td style="${bundleProfit < 0 ? 'color:var(--high)' : ''}">${f(bundleProfit)}</td></tr>
+        <tr><th>Profit selling only the main product</th><td>${f(mainProfit)}</td></tr>
+        <tr><th>Profit if all items bought separately (one order)</th><td>${f(separateProfit)}</td></tr>
+      </table>
+      <p class="note">${extra > 0
+        ? `Each customer who takes the bundle instead of just the main product earns you ${f(extra)} more, because the fees and shipping are paid once.`
+        : 'The bundle earns less than selling the main product alone: lower the discount or pick a higher-margin add-on.'}</p>`;
+  });
+</script>

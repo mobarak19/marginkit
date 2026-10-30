@@ -1,0 +1,197 @@
+---
+// One calculator for every marketplace: rates come from src/data/fees/*.json.
+// `platform` limits the list to one marketplace (its countries); without it,
+// every marketplace is listed.
+import ShareRow from '../ShareRow.astro';
+import { schedulesFor, scheduleId } from '../../data/fees';
+import { sampleFor } from '../../lib/money';
+
+interface Props { platform?: string; defaultCountry?: string }
+const { platform, defaultCountry } = Astro.props;
+const list = schedulesFor(platform);
+const def = list.find((s) => s.country === defaultCountry) ?? list[0];
+const cat = def.categories[0];
+const sample = sampleFor(def.currency);
+const MAX_EXTRAS = 2;
+---
+<div class="calc" data-calc="marketplace" data-platform={platform ?? ''}>
+  <form>
+    <div class="row2">
+      <div class="field">
+        <label for="mp-market">{platform ? 'Country' : 'Marketplace'}</label>
+        <select class="select" id="mp-market" name="market">
+          {list.map((s) => <option value={scheduleId(s)} selected={s === def}>{platform ? `${s.countryName} (${s.currency})` : `${s.platformName}: ${s.countryName} (${s.currency})`}</option>)}
+        </select>
+      </div>
+      <div class="field">
+        <label for="mp-cat">Category</label>
+        <select class="select" id="mp-cat" name="cat">
+          {def.categories.map((c, i) => <option value={String(i)} selected={i === 0}>{c.name} ({c.pct}%)</option>)}
+        </select>
+      </div>
+    </div>
+    <div class="row3">
+      <div class="field"><label for="mp-price">Selling price</label><input class="input" id="mp-price" name="price" type="number" inputmode="decimal" min="0" step={sample.step} value={sample.price} /></div>
+      <div class="field"><label for="mp-ship">Shipping charged <span class="hint">buyer pays</span></label><input class="input" id="mp-ship" name="ship" type="number" inputmode="decimal" min="0" step={sample.step} value={sample.ship} /></div>
+      <div class="field"><label for="mp-disc">Your discount <span class="hint">voucher</span></label><input class="input" id="mp-disc" name="disc" type="number" inputmode="decimal" min="0" step={sample.step} value="0" /></div>
+    </div>
+    <div class="row3">
+      <div class="field"><label for="mp-cogs">Product cost</label><input class="input" id="mp-cogs" name="cogs" type="number" inputmode="decimal" min="0" step={sample.step} value={sample.cogs} /></div>
+      <div class="field"><label for="mp-shipcost">Shipping you pay</label><input class="input" id="mp-shipcost" name="shipcost" type="number" inputmode="decimal" min="0" step={sample.step} value={sample.shipcost} /></div>
+      <div class="field"><label for="mp-pack">Packaging</label><input class="input" id="mp-pack" name="pack" type="number" inputmode="decimal" min="0" step={sample.step} value={sample.pack} /></div>
+    </div>
+    <div class="row2">
+      <div class="field"><label for="mp-ads">Ads / marketing <span class="hint">% of price</span></label><input class="input" id="mp-ads" name="ads" type="number" min="0" max="100" step="0.5" value="0" /></div>
+      <div class="field"><label for="mp-target">Target profit margin %</label><input class="input" id="mp-target" name="target" type="number" min="0" max="95" step="1" value="20" /></div>
+    </div>
+    <fieldset class="field" data-extras style="border:0;padding:0;margin:0">
+      <legend class="label" style="font-weight:600;font-size:0.92rem;margin-bottom:6px">Optional programmes</legend>
+      {Array.from({ length: MAX_EXTRAS }, (_, i) => (
+        <label class="check" data-extra={i} hidden={!def.extras[i]}>
+          <input type="checkbox" name={`x${i}`} value="1" /> <span>{def.extras[i] ? `${def.extras[i].name} (${def.extras[i].pct}%)` : ''}</span>
+        </label>
+      ))}
+      <p class="note" data-no-extras hidden={def.extras.length > 0}>None for this marketplace.</p>
+    </fieldset>
+    <details class="group">
+      <summary>Fee rates <span class="count">edit if yours differ</span></summary>
+      <div style="padding:14px;display:grid;gap:12px">
+        <div class="row3">
+          <div class="field"><label for="mp-comm">Commission %</label><input class="input" id="mp-comm" name="comm" type="number" min="0" max="100" step="0.1" value={cat.pct} /></div>
+          <div class="field"><label for="mp-pay">Payment fee %</label><input class="input" id="mp-pay" name="pay" type="number" min="0" max="100" step="0.1" value={def.paymentPct} /></div>
+          <div class="field"><label for="mp-payfix">Payment fixed</label><input class="input" id="mp-payfix" name="payfix" type="number" min="0" step="0.01" value={def.paymentFixed} /></div>
+        </div>
+        <div class="row3">
+          <div class="field"><label for="mp-order" data-order-label>{def.perOrderLabel}</label><input class="input" id="mp-order" name="order" type="number" min="0" step="0.01" value={cat.perOrder ?? def.perOrder} /></div>
+          <div class="field"><label for="mp-ftax" data-ftax-label>{def.feeTaxLabel} %</label><input class="input" id="mp-ftax" name="ftax" type="number" min="0" max="50" step="0.5" value={def.feeTaxPct} /></div>
+          <div class="field"><label for="mp-otherfee">Other fees %</label><input class="input" id="mp-otherfee" name="otherfee" type="number" min="0" max="100" step="0.1" value="0" /></div>
+        </div>
+        <div class="field"><label for="mp-vat">Sales VAT/GST in your price % <span class="hint">if you are registered</span></label><input class="input" id="mp-vat" name="vat" type="number" min="0" max="40" step="0.5" value="0" /></div>
+        <p class="note" data-notes>{def.notes}</p>
+      </div>
+    </details>
+    <ShareRow />
+    <p class="note" data-review></p>
+  </form>
+  <div class="out" data-out aria-live="polite"></div>
+</div>
+
+<script>
+  import { mountCalc, num, esc } from '../../app/calc';
+  import { findSchedule, reviewLabel, scheduleId, type FeeSchedule } from '../../data/fees';
+  import { saleProfit, breakEvenPrice, priceForMargin, type SaleInput } from '../../lib/profit';
+  import { money, pct, sampleFor } from '../../lib/money';
+
+  for (const root of document.querySelectorAll<HTMLElement>('[data-calc="marketplace"]')) {
+    const form = root.querySelector('form')!;
+    const marketSel = form.elements.namedItem('market') as HTMLSelectElement;
+    const catSel = form.elements.namedItem('cat') as HTMLSelectElement;
+    const field = (name: string) => form.elements.namedItem(name) as HTMLInputElement;
+    // Setting value and defaultValue together keeps the URL short: only edits
+    // to the marketplace's own rates end up in the shareable link.
+    const setDefault = (name: string, value: number | string) => {
+      const el = field(name);
+      el.defaultValue = String(value);
+      el.value = String(value);
+    };
+    let current = findSchedule(marketSel.value)!;
+
+    function applyCategory(s: FeeSchedule, i: number) {
+      const c = s.categories[i] ?? s.categories[0];
+      setDefault('comm', c.pct);
+      setDefault('order', c.perOrder ?? s.perOrder);
+    }
+
+    function applyMarket(s: FeeSchedule, catIndex = 0) {
+      catSel.replaceChildren(...s.categories.map((c, i) => new Option(`${c.name} (${c.pct}%)`, String(i), i === 0, i === catIndex)));
+      applyCategory(s, catIndex);
+      setDefault('pay', s.paymentPct);
+      setDefault('payfix', s.paymentFixed);
+      setDefault('ftax', s.feeTaxPct);
+      root.querySelector('[data-order-label]')!.textContent = s.perOrderLabel;
+      root.querySelector('[data-ftax-label]')!.textContent = `${s.feeTaxLabel} %`;
+      root.querySelector('[data-notes]')!.textContent = s.notes;
+      root.querySelectorAll<HTMLElement>('[data-extra]').forEach((el, i) => {
+        const x = s.extras[i];
+        el.hidden = !x;
+        el.querySelector('span')!.textContent = x ? `${x.name} (${x.pct}%)` : '';
+        const box = el.querySelector('input')!;
+        if (!x) box.checked = false;
+      });
+      root.querySelector<HTMLElement>('[data-no-extras]')!.hidden = s.extras.length > 0;
+      if (s.currency !== current.currency) {
+        const smp = sampleFor(s.currency);
+        for (const k of ['price', 'ship', 'cogs', 'shipcost', 'pack'] as const) {
+          setDefault(k, smp[k]);
+          field(k).step = String(smp.step);
+        }
+        setDefault('disc', 0);
+      }
+      current = s;
+    }
+
+    // Restore a shared marketplace before mountCalc restores the other fields.
+    const params = new URLSearchParams(location.search);
+    const fromUrl = findSchedule(params.get('market') ?? '');
+    if (fromUrl && fromUrl !== current) {
+      marketSel.value = scheduleId(fromUrl);
+      applyMarket(fromUrl, num(params.get('cat') ?? '0'));
+    } else if (params.has('cat')) applyCategory(current, num(params.get('cat') ?? '0'));
+
+    marketSel.addEventListener('change', () => applyMarket(findSchedule(marketSel.value)!));
+    catSel.addEventListener('change', () => applyCategory(current, num(catSel.value)));
+    form.addEventListener('reset', () => setTimeout(() => {
+      applyMarket(findSchedule(marketSel.value)!);
+      form.dispatchEvent(new Event('change'));
+    }));
+
+    mountCalc(root, (v) => {
+      const s = current;
+      const f = money(s.currency);
+      const extrasPct = s.extras.reduce((sum, x, i) => sum + (v[`x${i}`] ? x.pct : 0), 0) + Math.max(0, num(v.otherfee));
+      const input: SaleInput = {
+        price: Math.max(0, num(v.price)), shippingCharged: Math.max(0, num(v.ship)), discount: Math.max(0, num(v.disc)),
+        cogs: Math.max(0, num(v.cogs)), shipCost: Math.max(0, num(v.shipcost)), packaging: Math.max(0, num(v.pack)), otherCost: 0,
+        adsPct: Math.max(0, num(v.ads)), vatPct: Math.max(0, num(v.vat)),
+        commissionPct: Math.max(0, num(v.comm)), commissionMin: s.commissionMin ?? 0, commissionOnShipping: s.commissionOnShipping,
+        flatBelow: s.flatBelow, paymentPct: Math.max(0, num(v.pay)), paymentFixed: Math.max(0, num(v.payfix)),
+        perOrder: Math.max(0, num(v.order)), perOrderBelow: s.perOrderBelow, extrasPct, feeTaxPct: Math.max(0, num(v.ftax)),
+      };
+      const r = saleProfit(input);
+      const be = breakEvenPrice(input);
+      const target = Math.min(95, Math.max(0, num(v.target, 20)));
+      const tp = priceForMargin(input, target);
+      const share = (x: number) => (r.revenue ? Math.max(0, (x / r.revenue) * 100) : 0);
+      const loss = r.profit < 0;
+      root.querySelector('[data-review]')!.innerHTML = `${esc(reviewLabel(s))}. <a href="${esc(s.source)}" target="_blank" rel="noopener">Official ${esc(s.platformName)} fee page</a>.`;
+      return `
+        <div class="big"><div class="k">Net profit per order</div><div class="v" style="${loss ? 'color:var(--high)' : ''}">${f(r.profit)}</div>
+          <div class="s">${pct(r.margin)} margin · ${pct(r.roi)} return on product cost · ${esc(s.platformName)} ${esc(s.countryName)}</div>
+          <div class="bar-split" aria-hidden="true"><i class="c4" style="width:${share(Math.max(0, r.profit))}%"></i><i class="c1" style="width:${share(r.fees)}%"></i><i class="c3" style="width:${share(r.vat + r.ads)}%"></i><i class="c2" style="width:${share(r.costs)}%"></i></div>
+          <div class="legend"><span><b class="c4"></b>Profit</span><span><b class="c1"></b>Marketplace fees ${f(r.fees)}</span><span><b class="c3"></b>Tax &amp; ads ${f(r.vat + r.ads)}</span><span><b class="c2"></b>Your costs ${f(r.costs)}</span></div>
+        </div>
+        <table class="kv">
+          <tr><th>Buyer pays</th><td>${f(r.revenue)}</td></tr>
+          <tr><th>Commission (${input.commissionPct}%${s.flatBelow && r.sale < s.flatBelow.below ? `; flat under ${f(s.flatBelow.below)}` : ''})</th><td>−${f(r.commission)}</td></tr>
+          ${r.payment ? `<tr><th>Payment fee</th><td>−${f(r.payment)}</td></tr>` : ''}
+          ${r.extras ? `<tr><th>Programmes &amp; other fees (${extrasPct}%)</th><td>−${f(r.extras)}</td></tr>` : ''}
+          ${r.perOrder ? `<tr><th>${esc(s.perOrderLabel)}</th><td>−${f(r.perOrder)}</td></tr>` : ''}
+          ${r.feeTax ? `<tr><th>${esc(s.feeTaxLabel)} (${input.feeTaxPct}%)</th><td>−${f(r.feeTax)}</td></tr>` : ''}
+          <tr><th><strong>Marketplace takes</strong></th><td><strong>${f(r.fees)}</strong> (${pct(r.revenue ? r.fees / r.revenue : 0)})</td></tr>
+          ${r.vat ? `<tr><th>Sales VAT/GST you remit</th><td>−${f(r.vat)}</td></tr>` : ''}
+          ${r.ads ? `<tr><th>Ads / marketing</th><td>−${f(r.ads)}</td></tr>` : ''}
+          <tr><th>Product cost</th><td>−${f(input.cogs)}</td></tr>
+          ${input.shipCost ? `<tr><th>Shipping you pay</th><td>−${f(input.shipCost)}</td></tr>` : ''}
+          ${input.packaging ? `<tr><th>Packaging</th><td>−${f(input.packaging)}</td></tr>` : ''}
+          <tr><th><strong>Net profit</strong></th><td><strong>${f(r.profit)}</strong></td></tr>
+        </table>
+        <table class="kv">
+          <tr><th>Break-even price</th><td>${be === null ? 'Not reachable' : f(be)}</td></tr>
+          <tr><th>Price for ${target}% margin</th><td>${tp === null ? 'Not reachable' : f(tp)}</td></tr>
+          <tr><th>Profit per 100 orders</th><td>${f(r.profit * 100)}</td></tr>
+        </table>
+        ${loss ? `<div class="alert alert-high"><div><h3>You lose money on this order</h3><p>Raise the price to at least ${be === null ? 'a level the fees allow' : f(be)}, lower costs, or turn off paid programmes.</p></div></div>` : ''}
+        <p class="note">Estimates only. Not affiliated with ${esc(s.platformName)}. Fees vary by seller account, campaign and category; check your Seller Center statement.</p>`;
+    });
+  }
+</script>

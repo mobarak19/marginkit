@@ -1,0 +1,26 @@
+{
+  "platform": "meesho",
+  "platformName": "Meesho",
+  "country": "IN",
+  "countryName": "India",
+  "currency": "INR",
+  "status": "example",
+  "entered": "2026-10-30",
+  "verified": null,
+  "source": "https://supplier.meesho.com/",
+  "categories": [
+    {
+      "name": "All categories (0% commission)",
+      "pct": 0
+    }
+  ],
+  "commissionOnShipping": false,
+  "paymentPct": 0,
+  "paymentFixed": 0,
+  "perOrder": 0,
+  "perOrderLabel": "Fixed fee per order",
+  "feeTaxPct": 18,
+  "feeTaxLabel": "GST on fees",
+  "extras": [],
+  "notes": "Meesho advertises 0% commission; shipping is charged to the customer or deducted, and returns can cost you the forward and return shipping."
+}

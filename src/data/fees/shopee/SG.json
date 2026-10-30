@@ -1,0 +1,55 @@
+{
+  "platform": "shopee",
+  "platformName": "Shopee",
+  "country": "SG",
+  "countryName": "Singapore",
+  "currency": "SGD",
+  "status": "example",
+  "entered": "2026-10-30",
+  "verified": null,
+  "source": "https://seller.shopee.sg/",
+  "categories": [
+    {
+      "name": "Mobile & gadgets",
+      "pct": 5
+    },
+    {
+      "name": "Electronics",
+      "pct": 6
+    },
+    {
+      "name": "Fashion",
+      "pct": 10
+    },
+    {
+      "name": "Health & beauty",
+      "pct": 9
+    },
+    {
+      "name": "Home & living",
+      "pct": 8
+    },
+    {
+      "name": "Other categories",
+      "pct": 8
+    }
+  ],
+  "commissionOnShipping": false,
+  "paymentPct": 3,
+  "paymentFixed": 0,
+  "perOrder": 0,
+  "perOrderLabel": "Fixed fee per order",
+  "feeTaxPct": 9,
+  "feeTaxLabel": "GST on fees",
+  "extras": [
+    {
+      "name": "Free Shipping programme",
+      "pct": 5
+    },
+    {
+      "name": "Coins Cashback programme",
+      "pct": 3
+    }
+  ],
+  "notes": ""
+}

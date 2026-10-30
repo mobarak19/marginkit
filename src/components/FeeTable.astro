@@ -1,0 +1,59 @@
+---
+// Build-time table of a marketplace's fee schedules, with a worked example
+// per country (sample order from src/lib/money.ts).
+import { schedulesFor, reviewLabel, type FeeSchedule } from '../data/fees';
+import { saleProfit } from '../lib/profit';
+import { money, pct, sampleFor } from '../lib/money';
+import { u } from '../lib/url';
+
+interface Props { platform: string }
+const { platform } = Astro.props;
+const list = schedulesFor(platform);
+
+function example(s: FeeSchedule) {
+  const smp = sampleFor(s.currency);
+  const c = s.categories[0];
+  const r = saleProfit({
+    price: smp.price, shippingCharged: smp.ship, discount: 0, cogs: smp.cogs, shipCost: smp.shipcost, packaging: smp.pack, otherCost: 0,
+    adsPct: 0, vatPct: 0, commissionPct: c.pct, commissionMin: s.commissionMin ?? 0, commissionOnShipping: s.commissionOnShipping,
+    flatBelow: s.flatBelow, paymentPct: s.paymentPct, paymentFixed: s.paymentFixed, perOrder: c.perOrder ?? s.perOrder,
+    perOrderBelow: s.perOrderBelow, extrasPct: 0, feeTaxPct: s.feeTaxPct,
+  });
+  return { smp, c, r, f: money(s.currency) };
+}
+const name = list[0]?.platformName ?? platform;
+---
+<section class="section container" aria-labelledby="fee-table">
+  <div class="section-head">
+    <h2 id="fee-table">{name} fees by category</h2>
+    <p>Rates used by the calculator above. Fees change often: check the official page for your account before you rely on them.</p>
+  </div>
+  {list.map((s) => {
+    const { smp, c, r, f } = example(s);
+    return (
+      <div class="card card-pad" style="margin-bottom:16px">
+        <h3 style="margin-top:0">{s.countryName} <span class="tag">{s.currency}</span> <span class:list={['tag', s.verified ? 'ok' : 'warn']}>{reviewLabel(s)}</span></h3>
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead><tr><th><span>Category</span></th><th class="r"><span>Commission</span></th></tr></thead>
+            <tbody>{s.categories.map((cat) => <tr><td>{cat.name}</td><td class="r">{cat.pct}%</td></tr>)}</tbody>
+          </table>
+        </div>
+        <ul class="small" style="margin:12px 0 0;padding-left:18px;color:var(--text-2)">
+          {s.paymentPct > 0 || s.paymentFixed > 0 ? <li>Payment / transaction fee: {s.paymentPct}%{s.paymentFixed ? ` + ${f(s.paymentFixed)}` : ''}</li> : null}
+          {s.perOrder > 0 && <li>{s.perOrderLabel}: {f(s.perOrder)}{s.perOrderBelow ? ` (${f(s.perOrderBelow.fee)} for orders of ${f(s.perOrderBelow.below)} or less)` : ''}</li>}
+          {s.commissionMin && <li>Minimum commission: {f(s.commissionMin)} per item</li>}
+          {s.flatBelow && <li>Flat fee of {f(s.flatBelow.fee)} on sales under {f(s.flatBelow.below)}</li>}
+          {s.feeTaxPct > 0 && <li>{s.feeTaxLabel}: {s.feeTaxPct}% added to the fees</li>}
+          {s.commissionOnShipping && <li>Commission is charged on the item price plus shipping.</li>}
+          {s.extras.map((x) => <li>Optional: {x.name}, {x.pct}%</li>)}
+          {s.notes && <li>{s.notes}</li>}
+        </ul>
+        <p class="small" style="margin:12px 0 0">
+          <strong>Worked example:</strong> a {f(smp.price)} sale{smp.ship ? ` + ${f(smp.ship)} shipping` : ''} in “{c.name}” costing you {f(smp.cogs)} plus {f(smp.shipcost + smp.pack)} shipping and packaging: fees {f(r.fees)} ({pct(r.revenue ? r.fees / r.revenue : 0)}), profit <strong>{f(r.profit)}</strong> ({pct(r.margin)} margin).
+        </p>
+        <p class="small muted" style="margin:8px 0 0"><a href={s.source} target="_blank" rel="noopener">Official {s.platformName} fee page ({s.countryName})</a> · <a href={u('/about/#contact')}>Report an outdated fee</a></p>
+      </div>
+    );
+  })}
+</section>

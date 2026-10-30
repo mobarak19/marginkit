@@ -1,0 +1,26 @@
+{
+  "platform": "whatnot",
+  "platformName": "Whatnot",
+  "country": "US",
+  "countryName": "United States",
+  "currency": "USD",
+  "status": "example",
+  "entered": "2026-10-30",
+  "verified": null,
+  "source": "https://help.whatnot.com/",
+  "categories": [
+    {
+      "name": "Most categories",
+      "pct": 8
+    }
+  ],
+  "commissionOnShipping": false,
+  "paymentPct": 2.9,
+  "paymentFixed": 0.3,
+  "perOrder": 0,
+  "perOrderLabel": "Fixed fee per order",
+  "feeTaxPct": 0,
+  "feeTaxLabel": "Tax on fees",
+  "extras": [],
+  "notes": "The commission is charged on the sold price; payment processing applies to the order total including shipping."
+}

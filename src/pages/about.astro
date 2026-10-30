@@ -1,0 +1,31 @@
+---
+import Base from '../layouts/Base.astro';
+import { SITE } from '../data/site';
+import { donation } from '../lib/offers';
+import { u } from '../lib/url';
+const support = donation();
+---
+<Base title={`About ${SITE.name}`} description={`${SITE.name} is a free set of profit, fee and pricing calculators built by ${SITE.author}.`}>
+  <div class="container" style="padding-top:32px">
+    <nav class="breadcrumbs" aria-label="Breadcrumb"><a href={u('/')}>Home</a> / <span aria-current="page">About</span></nav>
+    <article class="prose">
+      <h1>About {SITE.name}</h1>
+      <p>{SITE.name} is a set of free calculators for <strong>marketplace sellers, restaurants and small businesses</strong>: what each order really earns, how to price a dish, and the pricing maths behind a healthy margin.</p>
+      <p>It’s built by <strong>{SITE.author}</strong>, a {SITE.authorBio.charAt(0).toLowerCase() + SITE.authorBio.slice(1)} Many sellers in South and Southeast Asia price by guesswork because the big fee calculators only cover Amazon; these tools cover the marketplaces they actually sell on.</p>
+      <h2>Principles</h2>
+      <ul>
+        <li><strong>Accurate on the details</strong>: tax on fees, commission on shipping where it applies, break-even prices.</li>
+        <li><strong>Transparent</strong>: every page shows its formula, and every fee schedule shows its source and when it was last checked.</li>
+        <li><strong>Private</strong>: calculations run in your browser. Nothing you type is sent to us.</li>
+        <li><strong>Independent</strong>: not affiliated with any marketplace, delivery app or payment provider. Results are estimates, not financial advice.</li>
+      </ul>
+      <h2>Support this project</h2>
+      <p>{SITE.name} is free and has no ad scripts. It’s funded by a few clearly labelled <a href={u('/disclosure/')}>affiliate recommendations</a>.{support && ' If it saved you time, you can also support it directly:'}</p>
+      {support && (
+        <p><a class:list={['btn btn-primary', { placeholder: !support.ready }]} href={support.ready ? support.url : '#'} target="_blank" rel="noopener">{support.label}</a></p>
+      )}
+      <h2 id="contact">Contact &amp; fee corrections</h2>
+      <p>Spotted a fee that has changed? Please send the marketplace, country, category and a link to the official page, and the rate will be updated with a new “last verified” date. Add your contact email or form here before launch.</p>
+    </article>
+  </div>
+</Base>

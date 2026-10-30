@@ -1,0 +1,77 @@
+---
+import ShareRow from '../ShareRow.astro';
+import CurrencySelect from '../CurrencySelect.astro';
+// Fixed rows keep every input shareable in the URL; empty rows are ignored.
+const ROWS = 10;
+const seed = [
+  ['Chicken breast', 9.5, 1000, 180, 85],
+  ['Basmati rice', 4, 1000, 120, 100],
+  ['Onion', 1.6, 1000, 60, 90],
+  ['Cooking oil', 3.5, 1000, 20, 100],
+  ['Spice mix', 5, 500, 8, 100],
+];
+---
+<div class="calc" data-calc="recipe">
+  <form>
+    <div class="table-wrap" style="border:0">
+      <table class="data-table recipe-table">
+        <thead><tr><th><span>Ingredient</span></th><th class="r"><span>Pack price</span></th><th class="r"><span>Pack size</span></th><th class="r"><span>Used</span></th><th class="r"><span>Yield %</span></th></tr></thead>
+        <tbody>
+          {Array.from({ length: ROWS }, (_, i) => {
+            const s = seed[i] ?? ['', '', '', '', 100];
+            return (
+              <tr>
+                <td><input class="input" name={`n${i}`} aria-label={`Ingredient ${i + 1} name`} value={s[0]} placeholder={`Ingredient ${i + 1}`} /></td>
+                <td><input class="input" name={`p${i}`} aria-label={`Ingredient ${i + 1} pack price`} type="number" min="0" step="0.01" value={s[1]} /></td>
+                <td><input class="input" name={`q${i}`} aria-label={`Ingredient ${i + 1} pack size`} type="number" min="0" step="1" value={s[2]} /></td>
+                <td><input class="input" name={`u${i}`} aria-label={`Ingredient ${i + 1} amount used`} type="number" min="0" step="1" value={s[3]} /></td>
+                <td><input class="input" name={`y${i}`} aria-label={`Ingredient ${i + 1} yield percent`} type="number" min="1" max="100" step="1" value={s[4]} /></td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+    </div>
+    <p class="note">Use the same unit for pack size and amount used (grams with grams, ml with ml, pieces with pieces). Yield % is the usable part after trimming, peeling or cooking loss.</p>
+    <div class="row3">
+      <div class="field"><label for="rc-portions">Portions</label><input class="input" id="rc-portions" name="portions" type="number" min="1" step="1" value="1" /></div>
+      <div class="field"><label for="rc-extra">Extras per portion <span class="hint">packaging…</span></label><input class="input" id="rc-extra" name="extra" type="number" min="0" step="0.01" value="0.15" /></div>
+      <div class="field"><label for="rc-target">Target food cost %</label><input class="input" id="rc-target" name="target" type="number" min="1" max="99" step="0.5" value="30" /></div>
+    </div>
+    <div class="row2"><CurrencySelect id="rc-cur" /></div>
+    <ShareRow />
+  </form>
+  <div class="out" data-out aria-live="polite"></div>
+</div>
+
+<script>
+  import { mountCalc, num, esc } from '../../app/calc';
+  import { money, pct } from '../../lib/money';
+
+  const root = document.querySelector<HTMLElement>('[data-calc="recipe"]')!;
+  mountCalc(root, (v) => {
+    const f = money(v.cur || 'USD');
+    const lines: { name: string; cost: number }[] = [];
+    for (let i = 0; i < 10; i++) {
+      const price = num(v[`p${i}`]);
+      const size = num(v[`q${i}`]);
+      const used = num(v[`u${i}`]);
+      const yieldPct = Math.min(100, Math.max(1, num(v[`y${i}`], 100))) / 100;
+      if (!(price > 0 && size > 0 && used > 0)) continue;
+      lines.push({ name: v[`n${i}`] || `Ingredient ${i + 1}`, cost: (price / size) * (used / yieldPct) });
+    }
+    if (!lines.length) return '<div class="alert alert-info"><div><h3>Add an ingredient</h3><p>Enter a pack price, pack size and the amount used.</p></div></div>';
+    const portions = Math.max(1, Math.round(num(v.portions, 1)));
+    const batch = lines.reduce((s, l) => s + l.cost, 0);
+    const perPortion = batch / portions + Math.max(0, num(v.extra));
+    const target = Math.min(99, Math.max(1, num(v.target, 30))) / 100;
+    const top = [...lines].sort((a, b) => b.cost - a.cost);
+    return `<div class="big"><div class="k">Cost per portion</div><div class="v">${f(perPortion)}</div>
+        <div class="s">Suggested price ${f(perPortion / target)} at ${pct(target, 0)} food cost</div></div>
+      <table class="kv">
+        ${top.map((l) => `<tr><th>${esc(l.name)}</th><td>${f(l.cost)} <span class="muted small">(${pct(l.cost / batch, 0)})</span></td></tr>`).join('')}
+        <tr><th><strong>Recipe total</strong> (${portions} portion${portions > 1 ? 's' : ''})</th><td><strong>${f(batch)}</strong></td></tr>
+      </table>
+      <p class="note">${esc(top[0].name)} is ${pct(top[0].cost / batch, 0)} of the cost: re-check its price and portion first when supplier prices rise.</p>`;
+  });
+</script>

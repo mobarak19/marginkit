@@ -1,0 +1,58 @@
+{
+  "platform": "daraz",
+  "platformName": "Daraz",
+  "country": "PK",
+  "countryName": "Pakistan",
+  "currency": "PKR",
+  "status": "example",
+  "entered": "2026-10-30",
+  "verified": null,
+  "source": "https://sellercenter.daraz.pk/",
+  "categories": [
+    {
+      "name": "Mobiles & tablets",
+      "pct": 5
+    },
+    {
+      "name": "Laptops & computers",
+      "pct": 6
+    },
+    {
+      "name": "TV & home appliances",
+      "pct": 7
+    },
+    {
+      "name": "Electronic accessories",
+      "pct": 10
+    },
+    {
+      "name": "Fashion & clothing",
+      "pct": 15
+    },
+    {
+      "name": "Beauty & health",
+      "pct": 12
+    },
+    {
+      "name": "Home & lifestyle",
+      "pct": 12
+    },
+    {
+      "name": "Groceries",
+      "pct": 8
+    },
+    {
+      "name": "Other categories",
+      "pct": 10
+    }
+  ],
+  "commissionOnShipping": false,
+  "paymentPct": 2,
+  "paymentFixed": 0,
+  "perOrder": 0,
+  "perOrderLabel": "Fixed fee per order",
+  "feeTaxPct": 16,
+  "feeTaxLabel": "Sales tax on fees",
+  "extras": [],
+  "notes": ""
+}

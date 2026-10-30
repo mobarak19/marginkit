@@ -1,0 +1,68 @@
+---
+import ShareRow from '../ShareRow.astro';
+import CurrencySelect from '../CurrencySelect.astro';
+---
+<div class="calc" data-calc="restprofit">
+  <form>
+    <div class="row2">
+      <div class="field"><label for="rp-sales">Monthly sales <span class="hint">before tax</span></label><input class="input" id="rp-sales" name="sales" type="number" min="0" step="100" value="60000" /></div>
+      <div class="field"><label for="rp-food">Food &amp; drink cost %</label><input class="input" id="rp-food" name="food" type="number" min="0" max="100" step="0.5" value="31" /></div>
+    </div>
+    <div class="row2">
+      <div class="field"><label for="rp-labor">Labour <span class="hint">wages, payroll tax</span></label><input class="input" id="rp-labor" name="labor" type="number" min="0" step="100" value="18000" /></div>
+      <div class="field"><label for="rp-rent">Rent</label><input class="input" id="rp-rent" name="rent" type="number" min="0" step="100" value="6000" /></div>
+    </div>
+    <div class="row3">
+      <div class="field"><label for="rp-util">Utilities</label><input class="input" id="rp-util" name="util" type="number" min="0" step="50" value="1800" /></div>
+      <div class="field"><label for="rp-mkt">Marketing</label><input class="input" id="rp-mkt" name="mkt" type="number" min="0" step="50" value="900" /></div>
+      <div class="field"><label for="rp-other">Other fixed</label><input class="input" id="rp-other" name="other" type="number" min="0" step="50" value="2500" /></div>
+    </div>
+    <div class="row2">
+      <div class="field"><label for="rp-card">Card &amp; delivery fees <span class="hint">% of sales</span></label><input class="input" id="rp-card" name="card" type="number" min="0" max="50" step="0.1" value="3" /></div>
+      <CurrencySelect id="rp-cur" />
+    </div>
+    <ShareRow />
+    <p class="note">Put owner pay in labour if you draw a salary, so profit shows what the business itself earns.</p>
+  </form>
+  <div class="out" data-out aria-live="polite"></div>
+</div>
+
+<script>
+  import { mountCalc, num } from '../../app/calc';
+  import { money, pct } from '../../lib/money';
+
+  const root = document.querySelector<HTMLElement>('[data-calc="restprofit"]')!;
+  mountCalc(root, (v) => {
+    const f = money(v.cur || 'USD');
+    const sales = Math.max(0, num(v.sales));
+    const foodPct = Math.max(0, num(v.food)) / 100;
+    const cardPct = Math.max(0, num(v.card)) / 100;
+    const food = sales * foodPct;
+    const card = sales * cardPct;
+    const labor = Math.max(0, num(v.labor));
+    const fixed = Math.max(0, num(v.rent)) + Math.max(0, num(v.util)) + Math.max(0, num(v.mkt)) + Math.max(0, num(v.other));
+    const prime = food + labor;
+    const profit = sales - food - card - labor - fixed;
+    const margin = sales ? profit / sales : 0;
+    const contribution = 1 - foodPct - cardPct;
+    const breakEven = contribution > 0 ? (labor + fixed) / contribution : Infinity;
+    const primePct = sales ? prime / sales : 0;
+    const share = (x: number) => (sales ? Math.max(0, (x / sales) * 100) : 0);
+    return `<div class="big"><div class="k">Monthly net profit</div><div class="v" style="${profit < 0 ? 'color:var(--high)' : ''}">${f(profit)}</div>
+        <div class="s">${pct(margin)} net margin · ${f(profit * 12)} a year</div>
+        <div class="bar-split" aria-hidden="true"><i class="c2" style="width:${share(food)}%"></i><i class="c5" style="width:${share(labor)}%"></i><i class="c3" style="width:${share(fixed + card)}%"></i><i class="c4" style="width:${share(Math.max(0, profit))}%"></i></div>
+        <div class="legend"><span><b class="c2"></b>Food</span><span><b class="c5"></b>Labour</span><span><b class="c3"></b>Overheads &amp; fees</span><span><b class="c4"></b>Profit</span></div></div>
+      <table class="kv">
+        <tr><th>Food &amp; drink cost</th><td>${f(food)}</td></tr>
+        <tr><th>Labour</th><td>${f(labor)} (${pct(sales ? labor / sales : 0)})</td></tr>
+        <tr><th>Prime cost (food + labour)</th><td>${f(prime)} (${pct(primePct)})</td></tr>
+        <tr><th>Rent, utilities, marketing, other</th><td>${f(fixed)}</td></tr>
+        <tr><th>Card &amp; delivery fees</th><td>${f(card)}</td></tr>
+      </table>
+      <table class="kv">
+        <tr><th>Break-even monthly sales</th><td>${Number.isFinite(breakEven) ? f(breakEven) : 'Not reachable'}</td></tr>
+        <tr><th>Break-even daily sales (30 days)</th><td>${Number.isFinite(breakEven) ? f(breakEven / 30) : '—'}</td></tr>
+      </table>
+      <p class="note">${primePct > 0.65 ? 'Prime cost above 65% of sales leaves little room for rent and profit; most operators aim for 55–65%.' : 'Prime cost is within the 55–65% range most operators aim for.'} Labour is treated as fixed for the month in the break-even.</p>`;
+  });
+</script>

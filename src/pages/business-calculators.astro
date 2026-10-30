@@ -1,0 +1,13 @@
+---
+import Hub from '../components/Hub.astro';
+import { u } from '../lib/url';
+---
+<Hub section="business" title="Pricing & Small Business Calculators" description="Free small business calculators: markup vs margin, break-even point, Stripe/PayPal/Square payment fees, EOQ and reorder point, bundle pricing and freelance rates."
+  h1="Pricing & business calculators" lead="The pricing and planning maths every small business needs, explained with formulas and worked examples.">
+  <section class="section container"><div class="prose">
+    <h2>Pricing</h2>
+    <p>Get <a href={u('/markup-margin-calculator/')}>markup and margin</a> right, cover <a href={u('/payment-fee-calculator/')}>payment fees</a>, and use <a href={u('/bundle-pricing-calculator/')}>bundles</a> to raise order value.</p>
+    <h2>Planning</h2>
+    <p>Find your <a href={u('/break-even-calculator/')}>break-even point</a>, plan stock with the <a href={u('/eoq-reorder-point-calculator/')}>EOQ and reorder point calculator</a>, and set a sustainable <a href={u('/freelance-rate-calculator/')}>freelance rate</a>.</p>
+  </div></section>
+</Hub>

@@ -1,0 +1,31 @@
+{
+  "platform": "tiktok-shop",
+  "platformName": "TikTok Shop",
+  "country": "US",
+  "countryName": "United States",
+  "currency": "USD",
+  "status": "example",
+  "entered": "2026-10-30",
+  "verified": null,
+  "source": "https://seller-us.tiktok.com/",
+  "categories": [
+    {
+      "name": "Most categories",
+      "pct": 6
+    }
+  ],
+  "commissionOnShipping": true,
+  "paymentPct": 0,
+  "paymentFixed": 0,
+  "perOrder": 0,
+  "perOrderLabel": "Fixed fee per order",
+  "feeTaxPct": 0,
+  "feeTaxLabel": "Tax on fees",
+  "extras": [
+    {
+      "name": "Affiliate creator commission",
+      "pct": 10
+    }
+  ],
+  "notes": "The US referral fee is charged on the customer payment (item price plus shipping); there is no separate payment-processing fee."
+}

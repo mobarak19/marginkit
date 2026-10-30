@@ -1,0 +1,78 @@
+---
+import ShareRow from '../ShareRow.astro';
+import CurrencySelect from '../CurrencySelect.astro';
+// Example plan rates. Each app sets commission per contract and country.
+const APPS: [string, number][] = [
+  ['Uber Eats: Lite (15%)', 15], ['Uber Eats: Plus (25%)', 25], ['Uber Eats: Premium (30%)', 30],
+  ['DoorDash: Basic (15%)', 15], ['DoorDash: Plus (25%)', 25], ['DoorDash: Premier (30%)', 30],
+  ['Deliveroo (example 30%)', 30], ['Foodpanda (example 25%)', 25], ['Pickup orders (example 6%)', 6],
+];
+---
+<div class="calc" data-calc="delivery">
+  <form>
+    <div class="row2">
+      <div class="field">
+        <label for="dc-app">Delivery app &amp; plan</label>
+        <select class="select" id="dc-app" name="app">
+          {APPS.map(([n, p], i) => <option value={String(i)} data-pct={p} selected={i === 4}>{n}</option>)}
+        </select>
+      </div>
+      <div class="field"><label for="dc-comm">Commission %</label><input class="input" id="dc-comm" name="comm" type="number" min="0" max="60" step="0.5" value="25" /></div>
+    </div>
+    <div class="row2">
+      <div class="field"><label for="dc-price">In-store menu price</label><input class="input" id="dc-price" name="price" type="number" inputmode="decimal" min="0" step="0.01" value="14" /></div>
+      <div class="field"><label for="dc-food">Food cost per order</label><input class="input" id="dc-food" name="food" type="number" inputmode="decimal" min="0" step="0.01" value="4.5" /></div>
+    </div>
+    <div class="row3">
+      <div class="field"><label for="dc-pack">Packaging</label><input class="input" id="dc-pack" name="pack" type="number" min="0" step="0.05" value="0.6" /></div>
+      <div class="field"><label for="dc-pay">Payment fee %</label><input class="input" id="dc-pay" name="pay" type="number" min="0" max="10" step="0.1" value="0" /></div>
+      <div class="field"><label for="dc-promo">Promo you fund %</label><input class="input" id="dc-promo" name="promo" type="number" min="0" max="80" step="1" value="0" /></div>
+    </div>
+    <div class="row2"><CurrencySelect id="dc-cur" /></div>
+    <ShareRow />
+    <p class="note">Example plan rates. Your contract may differ: check the commission on your merchant statement and type it in.</p>
+  </form>
+  <div class="out" data-out aria-live="polite"></div>
+</div>
+
+<script>
+  import { mountCalc, num } from '../../app/calc';
+  import { money, pct } from '../../lib/money';
+
+  const root = document.querySelector<HTMLElement>('[data-calc="delivery"]')!;
+  const form = root.querySelector('form')!;
+  const appSel = form.elements.namedItem('app') as HTMLSelectElement;
+  appSel.addEventListener('change', () => {
+    (form.elements.namedItem('comm') as HTMLInputElement).value = appSel.selectedOptions[0]?.dataset.pct ?? '25';
+  });
+
+  mountCalc(root, (v) => {
+    const f = money(v.cur || 'USD');
+    const price = Math.max(0, num(v.price));
+    const food = Math.max(0, num(v.food));
+    const pack = Math.max(0, num(v.pack));
+    const keep = 1 - Math.min(100, Math.max(0, num(v.comm) + num(v.pay))) / 100;
+    const paid = 1 - Math.min(100, Math.max(0, num(v.promo))) / 100;
+    const appProfit = (p: number) => p * paid * keep - food - pack;
+    const dineProfit = price - food;
+    const dineMargin = price ? dineProfit / price : 0;
+    const k = paid * keep;
+    const sameProfit = k > 0 ? (dineProfit + food + pack) / k : Infinity;
+    const sameMarginDen = k - dineMargin * paid;
+    const sameMargin = sameMarginDen > 0 ? (food + pack) / sameMarginDen : Infinity;
+    const now = appProfit(price);
+    const ok = (x: number) => Number.isFinite(x) && x > 0;
+    return `<div class="big"><div class="k">App price to keep your profit</div><div class="v">${ok(sameProfit) ? f(sameProfit) : 'Not reachable'}</div>
+        <div class="s">${ok(sameProfit) && price ? `${pct(sameProfit / price - 1, 0)} above your in-store price` : ''}</div></div>
+      <table class="kv">
+        <tr><th>Profit per order in-store</th><td>${f(dineProfit)} (${pct(dineMargin)})</td></tr>
+        <tr><th>Profit on the app at the same price</th><td style="${now < 0 ? 'color:var(--high)' : ''}">${f(now)}</td></tr>
+        <tr><th>App takes at the same price</th><td>${f(price * paid * (1 - keep))}</td></tr>
+        <tr><th>Price to keep the same margin %</th><td>${ok(sameMargin) ? f(sameMargin) : 'Not reachable'}</td></tr>
+      </table>
+      <table class="kv">
+        ${[10, 15, 20, 25, 30].map((m) => `<tr><th>App price +${m}%</th><td>${f(appProfit(price * (1 + m / 100)))} profit</td></tr>`).join('')}
+      </table>
+      <p class="note">Some apps don’t allow higher prices on their platform than in-store, or offer lower commission in exchange for price parity. Check your agreement.</p>`;
+  });
+</script>

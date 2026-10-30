@@ -1,0 +1,18 @@
+---
+import Base from '../../layouts/Base.astro';
+import Icon from '../../components/Icon.astro';
+import { u } from '../../lib/url';
+const guides = [
+  { href: '/guides/marketplace-fee-comparison/', title: '2026 marketplace fee comparison', text: 'What 12 marketplaces take from the same kind of order, in 13 countries.', icon: 'table' },
+  { href: '/guides/markup-vs-margin/', title: 'Markup vs margin: the pricing mistake that costs you', text: 'Why a 40% markup is only a 28.6% margin, with a conversion table.', icon: 'percent' },
+];
+---
+<Base title="Guides: Marketplace Fees, Pricing & Profit" description="Plain-English guides to marketplace seller fees, markup vs margin and pricing for small businesses.">
+  <section class="hero container" style="text-align:left">
+    <nav class="breadcrumbs" aria-label="Breadcrumb"><a href={u('/')}>Home</a> / <span aria-current="page">Guides</span></nav>
+    <h1 style="margin-left:0">Guides</h1>
+  </section>
+  <div class="container"><div class="tool-grid">
+    {guides.map((g) => (<a class="tool-card" href={u(g.href)}><span class="ti"><Icon name={g.icon} size={22} /></span><span><strong>{g.title}</strong><span>{g.text}</span></span></a>))}
+  </div></div>
+</Base>

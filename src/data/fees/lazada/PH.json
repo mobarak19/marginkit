@@ -1,0 +1,55 @@
+{
+  "platform": "lazada",
+  "platformName": "Lazada",
+  "country": "PH",
+  "countryName": "Philippines",
+  "currency": "PHP",
+  "status": "example",
+  "entered": "2026-10-30",
+  "verified": null,
+  "source": "https://sellercenter.lazada.com.ph/",
+  "categories": [
+    {
+      "name": "Mobiles & tablets",
+      "pct": 4
+    },
+    {
+      "name": "Electronics",
+      "pct": 5
+    },
+    {
+      "name": "Fashion",
+      "pct": 9
+    },
+    {
+      "name": "Health & beauty",
+      "pct": 8
+    },
+    {
+      "name": "Home & living",
+      "pct": 8
+    },
+    {
+      "name": "Other categories",
+      "pct": 7
+    }
+  ],
+  "commissionOnShipping": false,
+  "paymentPct": 2,
+  "paymentFixed": 0,
+  "perOrder": 0,
+  "perOrderLabel": "Fixed fee per order",
+  "feeTaxPct": 12,
+  "feeTaxLabel": "VAT on fees",
+  "extras": [
+    {
+      "name": "Free Shipping Max",
+      "pct": 6
+    },
+    {
+      "name": "LazCoins Discount",
+      "pct": 2
+    }
+  ],
+  "notes": ""
+}

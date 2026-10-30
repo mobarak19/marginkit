@@ -1,0 +1,46 @@
+{
+  "platform": "daraz",
+  "platformName": "Daraz",
+  "country": "NP",
+  "countryName": "Nepal",
+  "currency": "NPR",
+  "status": "example",
+  "entered": "2026-10-30",
+  "verified": null,
+  "source": "https://sellercenter.daraz.com.np/",
+  "categories": [
+    {
+      "name": "Mobiles & tablets",
+      "pct": 5
+    },
+    {
+      "name": "Electronics",
+      "pct": 7
+    },
+    {
+      "name": "Fashion & clothing",
+      "pct": 15
+    },
+    {
+      "name": "Beauty & health",
+      "pct": 12
+    },
+    {
+      "name": "Home & lifestyle",
+      "pct": 12
+    },
+    {
+      "name": "Other categories",
+      "pct": 10
+    }
+  ],
+  "commissionOnShipping": false,
+  "paymentPct": 2,
+  "paymentFixed": 0,
+  "perOrder": 0,
+  "perOrderLabel": "Fixed fee per order",
+  "feeTaxPct": 13,
+  "feeTaxLabel": "VAT on fees",
+  "extras": [],
+  "notes": ""
+}

@@ -1,0 +1,63 @@
+---
+import ShareRow from '../ShareRow.astro';
+import CurrencySelect from '../CurrencySelect.astro';
+---
+<div class="calc" data-calc="eoq">
+  <form>
+    <div class="row2">
+      <div class="field"><label for="eo-d">Annual demand <span class="hint">units</span></label><input class="input" id="eo-d" name="d" type="number" min="0" step="100" value="12000" /></div>
+      <div class="field"><label for="eo-s">Cost per order <span class="hint">admin, delivery</span></label><input class="input" id="eo-s" name="s" type="number" min="0" step="1" value="45" /></div>
+    </div>
+    <div class="row2">
+      <div class="field"><label for="eo-c">Unit cost</label><input class="input" id="eo-c" name="c" type="number" min="0" step="0.01" value="8" /></div>
+      <div class="field"><label for="eo-h">Holding cost % per year <span class="hint">storage, capital</span></label><input class="input" id="eo-h" name="h" type="number" min="0" max="100" step="1" value="25" /></div>
+    </div>
+    <div class="row3">
+      <div class="field"><label for="eo-lt">Lead time <span class="hint">days</span></label><input class="input" id="eo-lt" name="lt" type="number" min="0" step="1" value="14" /></div>
+      <div class="field"><label for="eo-sd">Daily demand std dev <span class="hint">units</span></label><input class="input" id="eo-sd" name="sd" type="number" min="0" step="1" value="8" /></div>
+      <div class="field"><label for="eo-sl">Service level %</label><input class="input" id="eo-sl" name="sl" type="number" min="50" max="99.9" step="0.5" value="95" /></div>
+    </div>
+    <div class="row2">
+      <div class="field"><label for="eo-days">Selling days per year</label><input class="input" id="eo-days" name="days" type="number" min="1" max="366" step="1" value="360" /></div>
+      <CurrencySelect id="eo-cur" />
+    </div>
+    <ShareRow />
+  </form>
+  <div class="out" data-out aria-live="polite"></div>
+</div>
+
+<script>
+  import { mountCalc, num } from '../../app/calc';
+  import { eoq, zForServiceLevel } from '../../lib/profit';
+  import { money } from '../../lib/money';
+
+  const root = document.querySelector<HTMLElement>('[data-calc="eoq"]')!;
+  mountCalc(root, (v) => {
+    const f = money(v.cur || 'USD');
+    const D = Math.max(0, num(v.d));
+    const S = Math.max(0, num(v.s));
+    const H = Math.max(0, num(v.c)) * (Math.max(0, num(v.h)) / 100);
+    const days = Math.min(366, Math.max(1, num(v.days, 360)));
+    const daily = D / days;
+    const lt = Math.max(0, num(v.lt));
+    const z = zForServiceLevel(Math.min(0.999, Math.max(0.5, num(v.sl, 95) / 100)));
+    const safety = Math.ceil(z * Math.max(0, num(v.sd)) * Math.sqrt(lt));
+    const rop = Math.ceil(daily * lt + safety);
+    if (!(H > 0) || !(D > 0)) return '<div class="alert alert-info"><div><h3>Add demand and holding cost</h3><p>EOQ needs annual demand and a holding cost above zero.</p></div></div>';
+    const q = eoq(D, S, H);
+    const qr = Math.max(1, Math.round(q));
+    const orders = D / qr;
+    const annual = orders * S + (qr / 2 + safety) * H;
+    return `<div class="big"><div class="k">Order quantity (EOQ)</div><div class="v">${qr.toLocaleString()} units</div>
+        <div class="s">Reorder when stock falls to <strong>${rop.toLocaleString()}</strong> units</div></div>
+      <table class="kv">
+        <tr><th>Orders per year</th><td>${orders.toFixed(1)} (every ${(days / orders).toFixed(0)} days)</td></tr>
+        <tr><th>Average daily demand</th><td>${daily.toFixed(1)} units</td></tr>
+        <tr><th>Safety stock (z = ${z.toFixed(2)})</th><td>${safety.toLocaleString()} units</td></tr>
+        <tr><th>Reorder point</th><td>${rop.toLocaleString()} units</td></tr>
+        <tr><th>Holding cost per unit per year</th><td>${f(H)}</td></tr>
+        <tr><th>Yearly ordering + holding cost</th><td>${f(annual)}</td></tr>
+      </table>
+      <p class="note">EOQ = √(2 × demand × order cost ÷ holding cost). Reorder point = daily demand × lead time + safety stock, where safety stock = z × σ × √lead time.</p>`;
+  });
+</script>

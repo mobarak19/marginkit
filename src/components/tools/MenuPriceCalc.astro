@@ -1,0 +1,71 @@
+---
+import ShareRow from '../ShareRow.astro';
+import CurrencySelect from '../CurrencySelect.astro';
+---
+<div class="calc" data-calc="menuprice">
+  <form>
+    <div class="row2">
+      <div class="field"><label for="mpc-cost">Plate cost <span class="hint">ingredients</span></label><input class="input" id="mpc-cost" name="cost" type="number" inputmode="decimal" min="0" step="0.01" value="4.2" /></div>
+      <div class="field"><label for="mpc-target">Target food cost %</label><input class="input" id="mpc-target" name="target" type="number" min="1" max="99" step="0.5" value="30" /></div>
+    </div>
+    <div class="row2">
+      <div class="field"><label for="mpc-tax">Sales tax / VAT % <span class="hint">0 if prices exclude tax</span></label><input class="input" id="mpc-tax" name="tax" type="number" min="0" max="40" step="0.5" value="0" /></div>
+      <div class="field">
+        <label for="mpc-round">Round menu price to</label>
+        <select class="select" id="mpc-round" name="round">
+          <option value="none">No rounding</option>
+          <option value="0.99">.99 (charm pricing)</option>
+          <option value="0.95">.95</option>
+          <option value="0.5" selected>Nearest .50</option>
+          <option value="1">Whole number</option>
+          <option value="10">Nearest 10 (BDT, INR…)</option>
+        </select>
+      </div>
+    </div>
+    <div class="row2">
+      <div class="field"><label for="mpc-comp">Competitor price <span class="hint">optional</span></label><input class="input" id="mpc-comp" name="comp" type="number" min="0" step="0.5" value="" /></div>
+      <CurrencySelect id="mpc-cur" />
+    </div>
+    <ShareRow />
+  </form>
+  <div class="out" data-out aria-live="polite"></div>
+</div>
+
+<script>
+  import { mountCalc, num } from '../../app/calc';
+  import { money, pct } from '../../lib/money';
+
+  function roundPrice(p: number, mode: string): number {
+    if (mode === 'none' || !(p > 0)) return p;
+    if (mode === '0.99' || mode === '0.95') {
+      const end = Number(mode);
+      const r = Math.floor(p) + end;
+      return r >= p ? r : r + 1;
+    }
+    const step = Number(mode);
+    return Math.ceil(p / step - 1e-9) * step;
+  }
+
+  const root = document.querySelector<HTMLElement>('[data-calc="menuprice"]')!;
+  mountCalc(root, (v) => {
+    const f = money(v.cur || 'USD');
+    const cost = Math.max(0, num(v.cost));
+    const target = Math.min(99, Math.max(1, num(v.target, 30))) / 100;
+    const tax = Math.max(0, num(v.tax)) / 100;
+    const ideal = cost / target;
+    const menuGross = roundPrice(ideal * (1 + tax), v.round);
+    const menuNet = menuGross / (1 + tax);
+    const actual = menuNet ? cost / menuNet : 0;
+    const comp = num(v.comp);
+    const rows = [25, 28, 30, 33, 35].map((t) => `<tr><th>${t}% food cost</th><td>${f((cost / (t / 100)) * (1 + tax))}</td></tr>`).join('');
+    return `<div class="big"><div class="k">Menu price</div><div class="v">${f(menuGross)}</div>
+        <div class="s">${pct(actual)} food cost · ${f(menuNet - cost)} gross profit per plate${tax ? ' (after tax)' : ''}</div></div>
+      <table class="kv">
+        <tr><th>Exact price for ${pct(target, 0)}</th><td>${f(ideal)}${tax ? ' + tax' : ''}</td></tr>
+        ${tax ? `<tr><th>Tax in menu price</th><td>${f(menuGross - menuNet)}</td></tr>` : ''}
+        ${comp > 0 ? `<tr><th>Competitor at ${f(comp)}</th><td>${comp >= menuGross ? 'You are cheaper' : `You are ${pct((menuGross - comp) / comp, 0)} higher`}</td></tr>` : ''}
+      </table>
+      <table class="kv">${rows}</table>
+      <p class="note">The food cost method ignores labour and overheads. Dishes with a lot of prep time need a lower food cost % (higher price) than a dish you just plate.</p>`;
+  });
+</script>

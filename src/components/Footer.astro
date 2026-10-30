@@ -1,0 +1,42 @@
+---
+import Icon from './Icon.astro';
+import { SITE } from '../data/site';
+import { SECTIONS, toolsIn, type Section } from '../data/tools';
+import { donation } from '../lib/offers';
+import { u } from '../lib/url';
+const support = donation();
+const year = new Date().getFullYear();
+const cols: Section[] = ['ecom', 'restaurant', 'business'];
+---
+<footer class="site-footer">
+  <div class="container">
+    <div class="footer-grid footer-grid-4">
+      <div>
+        <a class="logo" href={u('/')}><span class="logo-mark"><Icon name="trending" size={20} /></span>{SITE.name}</a>
+        <p style="margin-top:12px;max-width:320px">Free profit, fee and pricing calculators for sellers, restaurants and small businesses. Everything runs in your browser.</p>
+        <ul>
+          <li><a href={u('/guides/')}>Guides</a></li>
+          <li><a href={u('/about/')}>About</a></li>
+          <li><a href={u('/privacy/')}>Privacy</a></li>
+          <li><a href={u('/disclosure/')}>Affiliate disclosure</a></li>
+          <li><a href={u('/terms/')}>Terms</a></li>
+        </ul>
+        {support && (
+          <a class:list={['btn btn-sm support-btn', { placeholder: !support.ready }]} href={support.ready ? support.url : '#'} target="_blank" rel="noopener">
+            <Icon name="zap" size={16} /> {support.label}
+          </a>
+        )}
+      </div>
+      {cols.map((s) => (
+        <div>
+          <h3><a href={u(`/${SECTIONS[s].hub}/`)} style="color:inherit;text-decoration:none">{SECTIONS[s].short}</a></h3>
+          <ul>{toolsIn(s).map((t) => <li><a href={u(`/${t.slug}/`)}>{t.name}</a></li>)}</ul>
+        </div>
+      ))}
+    </div>
+    <div class="footer-bottom">
+      <span>© {year} {SITE.name}. Estimates only. Not affiliated with any marketplace, delivery app or payment provider.</span>
+      <span>Made by {SITE.author}</span>
+    </div>
+  </div>
+</footer>

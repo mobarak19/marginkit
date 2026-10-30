@@ -1,0 +1,13 @@
+---
+import Hub from '../components/Hub.astro';
+import { u } from '../lib/url';
+---
+<Hub section="restaurant" title="Restaurant Calculators: Food Cost, Menu Price & More" description="Free restaurant calculators: food cost percentage, menu price, recipe costing, restaurant profit, delivery-app commission markup and a menu engineering matrix."
+  h1="Restaurant calculators" lead="From recipe cost to menu price to monthly profit, for restaurants, cafés and cloud kitchens.">
+  <section class="section container"><div class="prose">
+    <h2>From recipe to menu</h2>
+    <p>Cost each dish with the <a href={u('/recipe-cost-calculator/')}>recipe cost calculator</a>, set the price with the <a href={u('/menu-price-calculator/')}>menu price calculator</a>, then check the whole menu with the <a href={u('/menu-engineering-calculator/')}>menu engineering matrix</a>.</p>
+    <h2>Selling on delivery apps</h2>
+    <p>Uber Eats, DoorDash, Deliveroo and Foodpanda take 15–30% of each order. The <a href={u('/delivery-app-commission-calculator/')}>delivery app commission calculator</a> shows the app price that keeps your profit.</p>
+  </div></section>
+</Hub>

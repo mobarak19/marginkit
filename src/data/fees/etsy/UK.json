@@ -1,0 +1,31 @@
+{
+  "platform": "etsy",
+  "platformName": "Etsy",
+  "country": "UK",
+  "countryName": "United Kingdom",
+  "currency": "GBP",
+  "status": "example",
+  "entered": "2026-10-30",
+  "verified": null,
+  "source": "https://www.etsy.com/uk/legal/fees/",
+  "categories": [
+    {
+      "name": "All categories (6.5% transaction fee)",
+      "pct": 6.5
+    }
+  ],
+  "commissionOnShipping": true,
+  "paymentPct": 4,
+  "paymentFixed": 0.2,
+  "perOrder": 0.16,
+  "perOrderLabel": "Listing fee ($0.20)",
+  "feeTaxPct": 20,
+  "feeTaxLabel": "VAT on fees",
+  "extras": [
+    {
+      "name": "Offsite Ads (15%; 12% above $10k/yr sales)",
+      "pct": 15
+    }
+  ],
+  "notes": ""
+}

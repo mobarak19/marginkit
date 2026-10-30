@@ -1,0 +1,20 @@
+---
+import Base from '../layouts/Base.astro';
+import Icon from './Icon.astro';
+import ToolGrid from './ToolGrid.astro';
+import { SECTIONS, toolsIn, type Section } from '../data/tools';
+import { u } from '../lib/url';
+interface Props { section: Section; title: string; description: string; h1: string; lead: string }
+const { section, title, description, h1, lead } = Astro.props;
+const s = SECTIONS[section];
+---
+<Base title={title} description={description}>
+  <section class="hero container">
+    <nav class="breadcrumbs" aria-label="Breadcrumb"><a href={u('/')}>Home</a> / <span aria-current="page">{s.name}</span></nav>
+    <span class="eyebrow"><Icon name={s.icon} size={15} /> {s.name}</span>
+    <h1>{h1}</h1>
+    <p class="lead">{lead}</p>
+  </section>
+  <div class="container"><ToolGrid tools={toolsIn(section)} /></div>
+  <slot />
+</Base>

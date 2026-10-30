@@ -1,0 +1,47 @@
+{
+  "platform": "ebay",
+  "platformName": "eBay",
+  "country": "US",
+  "countryName": "United States",
+  "currency": "USD",
+  "status": "example",
+  "entered": "2026-10-30",
+  "verified": null,
+  "source": "https://www.ebay.com/help/selling/fees-credits-invoices/selling-fees?id=4822",
+  "categories": [
+    {
+      "name": "Most categories",
+      "pct": 13.6
+    },
+    {
+      "name": "Books, movies & music",
+      "pct": 14.95
+    },
+    {
+      "name": "Guitars & basses",
+      "pct": 6.7
+    },
+    {
+      "name": "Sneakers ($150 or more)",
+      "pct": 8,
+      "perOrder": 0
+    },
+    {
+      "name": "Heavy equipment",
+      "pct": 3
+    }
+  ],
+  "commissionOnShipping": true,
+  "paymentPct": 0,
+  "paymentFixed": 0,
+  "perOrder": 0.4,
+  "perOrderBelow": {
+    "below": 10,
+    "fee": 0.3
+  },
+  "perOrderLabel": "Per-order fee",
+  "feeTaxPct": 0,
+  "feeTaxLabel": "Tax on fees",
+  "extras": [],
+  "notes": "The final value fee is charged on the total amount of the sale, including shipping (and sales tax, which this calculator leaves out). Store subscribers often pay lower rates."
+}

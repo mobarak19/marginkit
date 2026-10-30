@@ -1,0 +1,31 @@
+{
+  "platform": "tiktok-shop",
+  "platformName": "TikTok Shop",
+  "country": "UK",
+  "countryName": "United Kingdom",
+  "currency": "GBP",
+  "status": "example",
+  "entered": "2026-10-30",
+  "verified": null,
+  "source": "https://seller-uk.tiktok.com/",
+  "categories": [
+    {
+      "name": "Most categories",
+      "pct": 9
+    }
+  ],
+  "commissionOnShipping": true,
+  "paymentPct": 0,
+  "paymentFixed": 0,
+  "perOrder": 0,
+  "perOrderLabel": "Fixed fee per order",
+  "feeTaxPct": 20,
+  "feeTaxLabel": "VAT on fees",
+  "extras": [
+    {
+      "name": "Affiliate creator commission",
+      "pct": 10
+    }
+  ],
+  "notes": ""
+}

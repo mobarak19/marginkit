@@ -1,0 +1,55 @@
+{
+  "platform": "shopee",
+  "platformName": "Shopee",
+  "country": "ID",
+  "countryName": "Indonesia",
+  "currency": "IDR",
+  "status": "example",
+  "entered": "2026-10-30",
+  "verified": null,
+  "source": "https://seller.shopee.co.id/",
+  "categories": [
+    {
+      "name": "Mobile & gadgets",
+      "pct": 5
+    },
+    {
+      "name": "Electronics",
+      "pct": 6
+    },
+    {
+      "name": "Fashion",
+      "pct": 10
+    },
+    {
+      "name": "Health & beauty",
+      "pct": 9
+    },
+    {
+      "name": "Home & living",
+      "pct": 8
+    },
+    {
+      "name": "Other categories",
+      "pct": 8
+    }
+  ],
+  "commissionOnShipping": false,
+  "paymentPct": 3,
+  "paymentFixed": 0,
+  "perOrder": 0,
+  "perOrderLabel": "Fixed fee per order",
+  "feeTaxPct": 11,
+  "feeTaxLabel": "VAT on fees",
+  "extras": [
+    {
+      "name": "Free Shipping programme",
+      "pct": 5
+    },
+    {
+      "name": "Coins Cashback programme",
+      "pct": 3
+    }
+  ],
+  "notes": ""
+}

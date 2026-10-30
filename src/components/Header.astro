@@ -1,0 +1,33 @@
+---
+import Icon from './Icon.astro';
+import { SITE } from '../data/site';
+import { SECTIONS, toolsIn, type Section } from '../data/tools';
+import { u } from '../lib/url';
+const path = Astro.url.pathname;
+const menus: Section[] = ['ecom', 'restaurant', 'business'];
+---
+<header class="site-header">
+  <div class="container">
+    <a class="logo" href={u('/')} aria-label={`${SITE.name} home`}>
+      <span class="logo-mark"><Icon name="trending" size={20} /></span>
+      <span class="logo-text">{SITE.name}</span>
+    </a>
+    <nav class="nav" aria-label="Main">
+      {menus.map((s) => (
+        <details class="nav-tools" data-nav-tools>
+          <summary class:list={[{ 'nav-keep': s === 'ecom' }]}>{SECTIONS[s].short} <Icon name="chevronDown" size={16} /></summary>
+          <div class="nav-menu">
+            {toolsIn(s).map((t) => (
+              <a href={u(`/${t.slug}/`)} aria-current={path.startsWith(u(`/${t.slug}/`)) ? 'page' : undefined}>
+                <Icon name={t.icon} size={20} />
+                <span><strong>{t.name}</strong><span>{t.card}</span></span>
+              </a>
+            ))}
+            <a href={u(`/${SECTIONS[s].hub}/`)}><Icon name="grid" size={20} /><span><strong>All {SECTIONS[s].short.toLowerCase()} tools</strong><span>{SECTIONS[s].text}</span></span></a>
+          </div>
+        </details>
+      ))}
+      <a href={u('/guides/')} aria-current={path.startsWith(u('/guides/')) ? 'page' : undefined}>Guides</a>
+    </nav>
+  </div>
+</header>

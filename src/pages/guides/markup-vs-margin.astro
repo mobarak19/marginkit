@@ -1,0 +1,28 @@
+---
+import Guide from '../../layouts/Guide.astro';
+import { u } from '../../lib/url';
+import { markupFromMargin } from '../../lib/profit';
+const margins = [10, 15, 20, 25, 30, 33.3, 40, 50, 60, 75];
+---
+<Guide title="Markup vs Margin: Difference, Formulas & Table" description="Markup is profit ÷ cost; margin is profit ÷ price. Why a 40% markup is only a 28.6% margin, the conversion formulas and a ready table."
+  h1="Markup vs margin: the pricing mistake that costs you" updated="2026-10-30" tools={['markup-margin-calculator', 'marketplace-profit-calculator', 'menu-price-calculator']} offers="guide">
+  <p>Markup and margin both describe profit as a percentage, but of different things. Mixing them up is one of the most common reasons small businesses earn less than they planned.</p>
+  <h2>The definitions</h2>
+  <pre><code>markup = (price − cost) ÷ cost      (profit as a share of cost)
+margin = (price − cost) ÷ price     (profit as a share of price)</code></pre>
+  <p>A product that costs 60 and sells for 100 earns 40. That is a <strong>66.7% markup</strong> but a <strong>40% margin</strong>.</p>
+  <h2>Where it goes wrong</h2>
+  <p>Say you want a 40% margin and you add 40% to the cost: 60 × 1.4 = 84. Your profit is 24, which is only a <strong>28.6% margin</strong>. On 10,000 in sales you would earn about 2,860 instead of 4,000.</p>
+  <h2>Converting between them</h2>
+  <pre><code>margin = markup ÷ (1 + markup)
+markup = margin ÷ (1 − margin)
+price from margin = cost ÷ (1 − margin)</code></pre>
+  <div class="table-wrap">
+    <table class="data-table">
+      <thead><tr><th><span>Margin you want</span></th><th class="r"><span>Markup you need</span></th><th class="r"><span>Price for a cost of 100</span></th></tr></thead>
+      <tbody>{margins.map((m) => <tr><td>{m}%</td><td class="r">{markupFromMargin(m).toFixed(1)}%</td><td class="r">{(100 / (1 - m / 100)).toFixed(2)}</td></tr>)}</tbody>
+    </table>
+  </div>
+  <h2>Fees come out of margin</h2>
+  <p>On a marketplace, the commission and payment fees are a share of the <em>price</em>, so they reduce your margin directly. A 40% gross margin minus 15% in marketplace fees leaves 25% before shipping and ads. The <a href={u('/marketplace-profit-calculator/')}>marketplace profit calculator</a> includes all of them.</p>
+</Guide>

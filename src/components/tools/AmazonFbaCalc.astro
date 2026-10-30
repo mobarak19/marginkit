@@ -1,0 +1,126 @@
+---
+import ShareRow from '../ShareRow.astro';
+import { findSchedule } from '../../data/fees';
+const amazon = findSchedule('amazon-us')!;
+// Example FBA fulfilment fees (US, per unit). Amazon updates these every year.
+const TIERS: [string, number][] = [
+  ['Small standard, up to 4 oz', 3.06], ['Small standard, 12–16 oz', 3.72], ['Large standard, up to 4 oz', 3.68],
+  ['Large standard, 1–1.25 lb', 4.75], ['Large standard, 2–2.25 lb', 5.9], ['Large standard, 3 lb', 6.61],
+];
+---
+<div class="calc" data-calc="fba">
+  <form>
+    <div class="row2">
+      <div class="field"><label for="fba-price">Selling price</label><input class="input" id="fba-price" name="price" type="number" inputmode="decimal" min="0" step="0.01" value="24.99" /></div>
+      <div class="field"><label for="fba-cogs">Product cost <span class="hint">per unit</span></label><input class="input" id="fba-cogs" name="cogs" type="number" inputmode="decimal" min="0" step="0.01" value="6" /></div>
+    </div>
+    <div class="row2">
+      <div class="field">
+        <label for="fba-cat">Referral fee category</label>
+        <select class="select" id="fba-cat" name="cat">
+          {amazon.categories.map((c, i) => <option value={String(i)} selected={i === 0}>{c.name} ({c.pct}%)</option>)}
+        </select>
+      </div>
+      <div class="field"><label for="fba-ref">Referral fee %</label><input class="input" id="fba-ref" name="ref" type="number" min="0" max="50" step="0.5" value={amazon.categories[0].pct} /></div>
+    </div>
+    <div class="row2">
+      <div class="field">
+        <label for="fba-tier">Size tier <span class="hint">example fee</span></label>
+        <select class="select" id="fba-tier" name="tier">
+          {TIERS.map(([n, fee], i) => <option value={String(fee)} selected={i === 3}>{n}: ${fee.toFixed(2)}</option>)}
+        </select>
+      </div>
+      <div class="field"><label for="fba-ful">FBA fulfilment fee</label><input class="input" id="fba-ful" name="ful" type="number" min="0" step="0.01" value={TIERS[3][1]} /></div>
+    </div>
+    <div class="row3">
+      <div class="field"><label for="fba-inb">Inbound shipping <span class="hint">per unit</span></label><input class="input" id="fba-inb" name="inb" type="number" min="0" step="0.05" value="0.6" /></div>
+      <div class="field"><label for="fba-vol">Unit volume <span class="hint">cu ft</span></label><input class="input" id="fba-vol" name="vol" type="number" min="0" step="0.01" value="0.1" /></div>
+      <div class="field"><label for="fba-months">Months in storage</label><input class="input" id="fba-months" name="months" type="number" min="0" step="0.5" value="2" /></div>
+    </div>
+    <div class="field">
+      <span class="label">Storage season</span>
+      <div class="seg" role="radiogroup" aria-label="Storage season">
+        <label><input type="radio" name="season" value="0.78" checked /><span>Jan–Sep ($0.78/cu ft)</span></label>
+        <label><input type="radio" name="season" value="2.4" /><span>Oct–Dec ($2.40/cu ft)</span></label>
+      </div>
+    </div>
+    <div class="row3">
+      <div class="field"><label for="fba-ads">PPC spend <span class="hint">% of price</span></label><input class="input" id="fba-ads" name="ads" type="number" min="0" max="100" step="0.5" value="10" /></div>
+      <div class="field"><label for="fba-ret">Returns %</label><input class="input" id="fba-ret" name="ret" type="number" min="0" max="100" step="0.5" value="3" /></div>
+      <div class="field"><label for="fba-units">Units / month</label><input class="input" id="fba-units" name="units" type="number" min="0" step="10" value="300" /></div>
+    </div>
+    <div class="field"><label for="fba-fbm">Your shipping cost if you fulfil yourself (FBM)</label><input class="input" id="fba-fbm" name="fbm" type="number" min="0" step="0.05" value="5.5" /></div>
+    <ShareRow />
+    <p class="note">Example US fees: Amazon changes FBA and storage fees every year. Check the size tier and fee in Seller Central, then type the exact fee in the box.</p>
+  </form>
+  <div class="out" data-out aria-live="polite"></div>
+</div>
+
+<script>
+  import { mountCalc, num } from '../../app/calc';
+  import { findSchedule } from '../../data/fees';
+  import { solveUp } from '../../lib/profit';
+  import { money, pct } from '../../lib/money';
+
+  const amazon = findSchedule('amazon-us')!;
+  const root = document.querySelector<HTMLElement>('[data-calc="fba"]')!;
+  const form = root.querySelector('form')!;
+  const setPair = (from: string, to: string, map: (v: string) => string) =>
+    form.elements.namedItem(from)!.addEventListener('change', (e) => {
+      const target = form.elements.namedItem(to) as HTMLInputElement;
+      target.value = map((e.target as HTMLSelectElement).value);
+    });
+  setPair('cat', 'ref', (v) => String(amazon.categories[num(v)]?.pct ?? 15));
+  setPair('tier', 'ful', (v) => v);
+
+  const f = money('USD');
+  mountCalc(root, (v) => {
+    const refPct = Math.max(0, num(v.ref)) / 100;
+    const cogs = Math.max(0, num(v.cogs));
+    const ful = Math.max(0, num(v.ful));
+    const inb = Math.max(0, num(v.inb));
+    const storage = Math.max(0, num(v.vol)) * Math.max(0, num(v.season, 0.78)) * Math.max(0, num(v.months));
+    const adsPct = Math.max(0, num(v.ads)) / 100;
+    const retPct = Math.min(1, Math.max(0, num(v.ret)) / 100);
+    const units = Math.max(0, num(v.units));
+    const fbmShip = Math.max(0, num(v.fbm));
+
+    // Returned units: the sale is refunded (Amazon keeps 20% of the referral
+    // fee, capped at $5) and, as a simplification, the unit is not resellable.
+    const unit = (price: number, fba: boolean) => {
+      const referral = price > 0 ? Math.max(price * refPct, amazon.commissionMin ?? 0) : 0;
+      const ship = fba ? ful + inb + storage : fbmShip;
+      const ads = price * adsPct;
+      const keptOnReturn = Math.min(referral * 0.2, 5);
+      const returnCost = retPct * (price - referral + keptOnReturn);
+      const profit = price - referral - ship - ads - cogs - returnCost;
+      return { referral, ship, ads, returnCost, profit, margin: price ? profit / price : 0 };
+    };
+    const price = Math.max(0, num(v.price));
+    const a = unit(price, true);
+    const m = unit(price, false);
+    const be = solveUp((p) => unit(p, true).profit);
+    const loss = a.profit < 0;
+    return `
+      <div class="big"><div class="k">FBA profit per unit</div><div class="v" style="${loss ? 'color:var(--high)' : ''}">${f(a.profit)}</div>
+        <div class="s">${pct(a.margin)} margin · ${pct(cogs ? a.profit / cogs : 0)} ROI · ${f(a.profit * units)} a month</div></div>
+      <table class="kv">
+        <tr><th>Selling price</th><td>${f(price)}</td></tr>
+        <tr><th>Referral fee (${(refPct * 100).toFixed(1)}%, min $0.30)</th><td>−${f(a.referral)}</td></tr>
+        <tr><th>FBA fulfilment fee</th><td>−${f(ful)}</td></tr>
+        <tr><th>Monthly storage × ${num(v.months)}</th><td>−${f(storage)}</td></tr>
+        <tr><th>Inbound shipping</th><td>−${f(inb)}</td></tr>
+        <tr><th>PPC ads</th><td>−${f(a.ads)}</td></tr>
+        <tr><th>Returns (${(retPct * 100).toFixed(1)}%)</th><td>−${f(a.returnCost)}</td></tr>
+        <tr><th>Product cost</th><td>−${f(cogs)}</td></tr>
+        <tr><th><strong>Profit per unit</strong></th><td><strong>${f(a.profit)}</strong></td></tr>
+      </table>
+      <table class="kv">
+        <tr><th>Break-even price (FBA)</th><td>${be === null ? 'Not reachable' : f(be)}</td></tr>
+        <tr><th>Total Amazon fees per unit</th><td>${f(a.referral + ful + storage)} (${pct(price ? (a.referral + ful + storage) / price : 0)})</td></tr>
+        <tr><th>Profit if you fulfil yourself (FBM)</th><td>${f(m.profit)}</td></tr>
+        <tr><th>FBA vs FBM per unit</th><td>${a.profit >= m.profit ? '+' : '−'}${f(Math.abs(a.profit - m.profit))}</td></tr>
+      </table>
+      <p class="note">Estimates only. Not affiliated with Amazon. FBA also improves Buy Box and Prime eligibility, which this maths can’t price in.</p>`;
+  });
+</script>

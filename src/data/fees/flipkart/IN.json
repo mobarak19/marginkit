@@ -1,0 +1,50 @@
+{
+  "platform": "flipkart",
+  "platformName": "Flipkart",
+  "country": "IN",
+  "countryName": "India",
+  "currency": "INR",
+  "status": "example",
+  "entered": "2026-10-30",
+  "verified": null,
+  "source": "https://seller.flipkart.com/",
+  "categories": [
+    {
+      "name": "Mobiles",
+      "pct": 5
+    },
+    {
+      "name": "Electronics accessories",
+      "pct": 9
+    },
+    {
+      "name": "Large appliances",
+      "pct": 6
+    },
+    {
+      "name": "Fashion & apparel",
+      "pct": 15
+    },
+    {
+      "name": "Beauty & personal care",
+      "pct": 10
+    },
+    {
+      "name": "Home & furniture",
+      "pct": 12
+    },
+    {
+      "name": "Other categories",
+      "pct": 10
+    }
+  ],
+  "commissionOnShipping": false,
+  "paymentPct": 2,
+  "paymentFixed": 0,
+  "perOrder": 20,
+  "perOrderLabel": "Fixed fee",
+  "feeTaxPct": 18,
+  "feeTaxLabel": "GST on fees",
+  "extras": [],
+  "notes": "Flipkart charges commission, a fixed fee and a collection fee that depend on the category and price band, plus shipping by weight and zone. Enter shipping in your costs."
+}

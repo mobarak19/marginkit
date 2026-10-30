@@ -1,0 +1,44 @@
+---
+import Base from '../layouts/Base.astro';
+import Icon from '../components/Icon.astro';
+import ToolGrid from '../components/ToolGrid.astro';
+import Faq from '../components/Faq.astro';
+import { SITE } from '../data/site';
+import { SECTIONS, toolsIn, type Section } from '../data/tools';
+import { u } from '../lib/url';
+
+const title = `${SITE.name}: Profit, Fee & Pricing Calculators`;
+const description = 'Free profit calculators for sellers and restaurants: Daraz, Shopee, Lazada, TikTok Shop, Etsy, eBay and Amazon FBA fees, food cost, menu pricing, markup vs margin and more.';
+const order: Section[] = ['ecom', 'restaurant', 'business'];
+const faq: [string, string][] = [
+  ['Are these calculators free?', 'Yes. Every calculator is free, needs no account and runs in your browser.'],
+  ['How accurate are the marketplace fees?', 'Each marketplace page shows its rates, a link to the official fee page and when the rates were last checked. Fees change often and depend on your account, so every rate is editable.'],
+  ['Do you store my numbers?', 'No. Inputs stay in your browser and in the page address (so you can share a result). Nothing is sent to us.'],
+  ['Are you affiliated with Daraz, Shopee, Amazon or the others?', 'No. MarginKit is independent; marketplace names are used only to describe which fees the calculators model.'],
+];
+---
+<Base title={title} description={description}>
+  <section class="hero container">
+    <span class="eyebrow"><Icon name="trending" size={15} /> Free tools for sellers &amp; small businesses</span>
+    <h1>Know your profit before you set the price</h1>
+    <p class="lead">Marketplace fees, food costs and pricing maths, worked out properly: tax on fees, break-even prices and the margin you actually keep.</p>
+    <div class="section-switch">
+      <a class="btn btn-primary btn-lg" href={u('/marketplace-profit-calculator/')}><Icon name="store" size={20} /> Marketplace profit</a>
+      <a class="btn btn-lg" href={u('/food-cost-calculator/')}><Icon name="utensils" size={20} /> Food cost</a>
+      <a class="btn btn-lg" href={u('/markup-margin-calculator/')}><Icon name="percent" size={20} /> Markup vs margin</a>
+    </div>
+  </section>
+  {order.map((s) => (
+    <section class="section container" aria-labelledby={`sec-${s}`}>
+      <div class="section-head"><h2 id={`sec-${s}`} style="display:flex;gap:10px;align-items:center"><Icon name={SECTIONS[s].icon} size={24} /> {SECTIONS[s].name}</h2><p>{SECTIONS[s].text}</p></div>
+      <ToolGrid tools={toolsIn(s)} />
+    </section>
+  ))}
+  <section class="section container">
+    <div class="privacy-banner"><div class="ti"><Icon name="lock" size={26} /></div><div>
+      <h3 style="margin:0">Your numbers stay with you</h3>
+      <p>Costs and margins are sensitive. Every calculator runs in your browser, the menu engineering tool reads your sales file locally, and a strict security policy stops the site sending data anywhere.</p>
+    </div></div>
+  </section>
+  <Faq items={faq} />
+</Base>

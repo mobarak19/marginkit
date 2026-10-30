@@ -1,0 +1,25 @@
+---
+import Base from '../layouts/Base.astro';
+import { SITE } from '../data/site';
+import { u } from '../lib/url';
+---
+<Base title={`Affiliate Disclosure | ${SITE.name}`} description={`How ${SITE.name} is funded: affiliate links, and what that means for you.`}>
+  <div class="container" style="padding-top:32px">
+    <nav class="breadcrumbs" aria-label="Breadcrumb"><a href={u('/')}>Home</a> / <span aria-current="page">Affiliate disclosure</span></nav>
+    <article class="prose">
+      <h1>Affiliate disclosure</h1>
+      <p class="muted small">Last updated 30 October 2026</p>
+      <p>{SITE.name} is free, with no account. To keep it that way, some pages include <strong>affiliate links</strong> to seller tools, e-commerce platforms, shipping software and restaurant systems. If you click one and buy something, we may earn a commission <strong>at no extra cost to you</strong>.</p>
+      <h2>Our rules</h2>
+      <ul>
+        <li>Affiliate links are always labelled <em>“Affiliate”</em> and marked with <code>rel="sponsored"</code>.</li>
+        <li>We only recommend products we think are genuinely useful for the task on the page.</li>
+        <li>Partners never influence calculator results or fee data.</li>
+        <li>Affiliate links are plain links. There are <strong>no tracking scripts</strong> on this site.</li>
+        <li>Links marked <em>“Built by the author”</em> point to our own products, such as spreadsheet templates.</li>
+      </ul>
+      <h2>Questions</h2>
+      <p>See the <a href={u('/about/#contact')}>About page</a> to get in touch, or read <a href={u('/privacy/')}>how we protect your privacy</a>.</p>
+    </article>
+  </div>
+</Base>

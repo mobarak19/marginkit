@@ -1,0 +1,49 @@
+---
+import ShareRow from '../ShareRow.astro';
+import CurrencySelect from '../CurrencySelect.astro';
+---
+<div class="calc" data-calc="breakeven">
+  <form>
+    <div class="field"><label for="be-fixed">Fixed costs per month <span class="hint">rent, salaries, software</span></label><input class="input" id="be-fixed" name="fixed" type="number" min="0" step="100" value="8000" /></div>
+    <div class="row2">
+      <div class="field"><label for="be-price">Price per unit</label><input class="input" id="be-price" name="price" type="number" inputmode="decimal" min="0" step="0.01" value="40" /></div>
+      <div class="field"><label for="be-var">Variable cost per unit <span class="hint">product, fees, shipping</span></label><input class="input" id="be-var" name="var" type="number" inputmode="decimal" min="0" step="0.01" value="22" /></div>
+    </div>
+    <div class="row2">
+      <div class="field"><label for="be-target">Target profit per month</label><input class="input" id="be-target" name="target" type="number" min="0" step="100" value="3000" /></div>
+      <div class="field"><label for="be-exp">Expected units per month</label><input class="input" id="be-exp" name="exp" type="number" min="0" step="10" value="600" /></div>
+    </div>
+    <div class="row2"><CurrencySelect id="be-cur" /></div>
+    <ShareRow />
+  </form>
+  <div class="out" data-out aria-live="polite"></div>
+</div>
+
+<script>
+  import { mountCalc, num } from '../../app/calc';
+  import { money, pct } from '../../lib/money';
+
+  const root = document.querySelector<HTMLElement>('[data-calc="breakeven"]')!;
+  mountCalc(root, (v) => {
+    const f = money(v.cur || 'USD');
+    const fixed = Math.max(0, num(v.fixed));
+    const price = Math.max(0, num(v.price));
+    const variable = Math.max(0, num(v.var));
+    const cm = price - variable;
+    if (cm <= 0) return '<div class="alert alert-high"><div><h3>Every sale loses money</h3><p>The price must be higher than the variable cost per unit, or no amount of sales will cover your fixed costs.</p></div></div>';
+    const units = Math.ceil(fixed / cm);
+    const targetUnits = Math.ceil((fixed + Math.max(0, num(v.target))) / cm);
+    const exp = Math.max(0, num(v.exp));
+    const profitAtExp = exp * cm - fixed;
+    const safety = exp ? (exp - fixed / cm) / exp : 0;
+    return `<div class="big"><div class="k">Break-even</div><div class="v">${units.toLocaleString()} units</div>
+        <div class="s">${f(units * price)} in sales per month · ${(units / 30).toFixed(1)} a day</div></div>
+      <table class="kv">
+        <tr><th>Contribution per unit</th><td>${f(cm)} (${pct(price ? cm / price : 0)})</td></tr>
+        <tr><th>Units for ${f(num(v.target))} profit</th><td>${targetUnits.toLocaleString()} (${f(targetUnits * price)})</td></tr>
+        <tr><th>Profit at ${exp.toLocaleString()} units</th><td style="${profitAtExp < 0 ? 'color:var(--high)' : ''}">${f(profitAtExp)}</td></tr>
+        <tr><th>Margin of safety</th><td>${exp ? pct(safety) : '—'}</td></tr>
+      </table>
+      <p class="note">Break-even units = fixed costs ÷ (price − variable cost per unit), rounded up.</p>`;
+  });
+</script>
