@@ -41,7 +41,7 @@ Other example rates to verify: Amazon FBA size-tier fees and storage (`AmazonFba
 
 ## Engineering notes
 
-- Strict CSP (`script-src 'self'`); no third-party scripts, no cookies. Inputs live in the URL so results are shareable; buttons for copy link, copy result and reset.
+- Strict CSP (`script-src 'self'` plus the cookie-free Cloudflare Web Analytics beacon); no other third-party scripts, no cookies. Inputs live in the URL so results are shareable; buttons for copy link, copy result and reset.
 - Marketplace calculator: changing country/category resets rates and sample amounts (value *and* default), so the share link only carries real edits. Break-even and target-margin prices are solved numerically, so minimum fees and flat fees are handled.
 - Menu engineering uses Kasavana & Smith (70% popularity rule, weighted-average contribution margin) and a small built-in CSV parser (comma, semicolon or tab); files are never uploaded.
 
