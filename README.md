@@ -36,7 +36,7 @@ Other example rates to verify: Amazon FBA size-tier fees and storage (`AmazonFba
 - Name & URL: `src/data/site.ts` (“MarginKit” is a placeholder), `public/manifest.webmanifest`.
 - Monetization: `src/data/monetization.ts` (seller-tool, e-commerce platform, shipping and POS affiliates, your own templates). Hidden in production until filled. Amazon Associates needs its own disclosure wording if you add Amazon links.
 - Contact details for fee corrections: `src/pages/about.astro` (`#contact`).
-- Hosting: Cloudflare Pages (Astro preset, build `npm run build`, output `dist`, env `NODE_VERSION=24` and `SITE_URL=<your site URL>`). `public/_headers` is applied automatically.
+- Hosting: Cloudflare Workers (build `npm run build`, static assets from `dist`, Node from `.node-version`). `public/_headers` is applied automatically. Live URL is `SITE.url` in `src/data/site.ts`; for visit statistics paste a Cloudflare Web Analytics token into `SITE.analyticsToken`.
 - Add the site to Google Search Console and submit `sitemap-index.xml`.
 
 ## Engineering notes
